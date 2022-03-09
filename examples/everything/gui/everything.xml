@@ -1,0 +1,36 @@
+<gdml>
+    <script src="test_script.gd" type="text/gdscript"/>
+    <script name="builtin_script" type="text/gdscript">
+extends Reference
+
+func add_one(x):
+    return x + 1
+
+    </script>
+    <style>
+Button {
+    --colors-font-color: #000;
+    --colors-font-color-disabled: Color(0, 0, 0, 0.5);
+
+    --const-hseparation: 5;
+
+    --styles-normal-type: Flat;
+    --styles-normal-bg-color: #fff;
+}
+Button.test {
+    --const-hseparation: 10;
+}
+VBoxContainer {
+    background: #333
+}
+    </style>
+    <v_box_container style="anchor:full-rect">
+        <break/>
+        <label>1</label>
+        <label>2</label>
+    </v_box_container>
+</gdml>
+
+<gdml>
+    <label name="HelloLabel" style="anchor: 0.3;">Hello</label>
+</gdml>

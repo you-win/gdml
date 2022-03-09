@@ -1,0 +1,72 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Reference",
+"class": "GCT_ArgumentParser",
+"language": "GDScript",
+"path": "res://addons/gdml/godot-css-theme/ArgumentParser.gd"
+}, {
+"base": "Reference",
+"class": "GCT_CSSParser",
+"language": "GDScript",
+"path": "res://addons/gdml/godot-css-theme/CSSParser.gd"
+}, {
+"base": "Reference",
+"class": "GCT_CSSSimplifier",
+"language": "GDScript",
+"path": "res://addons/gdml/godot-css-theme/CSSSimplifier.gd"
+}, {
+"base": "Reference",
+"class": "GCT_Options",
+"language": "GDScript",
+"path": "res://addons/gdml/godot-css-theme/Options.gd"
+}, {
+"base": "Reference",
+"class": "GCT_Stylesheet",
+"language": "GDScript",
+"path": "res://addons/gdml/godot-css-theme/Stylesheet.gd"
+}, {
+"base": "Reference",
+"class": "GCT_ThemeApplier",
+"language": "GDScript",
+"path": "res://addons/gdml/godot-css-theme/ThemeApplier.gd"
+}, {
+"base": "Reference",
+"class": "OptParse",
+"language": "GDScript",
+"path": "res://addons/gdml/godot-css-theme/optparse.gd"
+} ]
+_global_script_class_icons={
+"GCT_ArgumentParser": "",
+"GCT_CSSParser": "",
+"GCT_CSSSimplifier": "",
+"GCT_Options": "",
+"GCT_Stylesheet": "",
+"GCT_ThemeApplier": "",
+"OptParse": ""
+}
+
+[application]
+
+config/name="GodotMarkupLanguage"
+run/main_scene="res://examples/everything/everything.tscn"
+config/icon="res://icon.png"
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+quality/driver/driver_name="GLES2"
+vram_compression/import_etc=true
+vram_compression/import_etc2=false
+environment/default_environment="res://default_env.tres"
