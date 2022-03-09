@@ -1,10 +1,13 @@
-<gdml>
+<gdml style="anchor_left: 0.5; anchor_right: 1.0; anchor_top: 0.1; anchor_bottom: 1.0">
     <script src="test_script.gd" type="text/gdscript"/>
     <script name="builtin_script" type="text/gdscript">
 extends Reference
 
 func add_one(x):
     return x + 1
+
+func _on_pressed():
+    print("hello")
 
     </script>
     <style>
@@ -25,12 +28,25 @@ VBoxContainer {
 }
     </style>
     <v_box_container style="anchor:full-rect">
-        <break/>
         <label>1</label>
         <label>2</label>
+        <v_box_container>
+            <label>inner</label>
+            <button connect="pressed" callback="_on_pressed">hello</button>
+        </v_box_container>
+        <label>3</label>
     </v_box_container>
 </gdml>
 
 <gdml>
-    <label name="HelloLabel" style="anchor: 0.3;">Hello</label>
+    <button
+        name="margin_test"
+        style="
+            margin: 100;
+            custom_colors/font_color: colorN=Red;
+        "
+    >
+        margin test
+    </button>
+    <label name="HelloLabel" style="anchor: 0.3; modulate: color=#ffb2d90a">Hello</label>
 </gdml>

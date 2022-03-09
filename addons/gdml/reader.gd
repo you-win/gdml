@@ -3,7 +3,6 @@ extends XMLParser
 class NodeData:
 	var node_name := ""
 	var is_open := false
-	var is_empty := false
 	var attributes := {} # Attribute: String -> Attribute value: Variant
 	var text := ""
 	var is_complete := false # If we are done parsing the entire xml file
@@ -14,6 +13,7 @@ class NodeData:
 	func get_as_dict() -> Dictionary:
 		return {
 			"node_name": node_name,
+			"is_open": is_open,
 			"attributes": attributes,
 			"text": text,
 			"is_complete": is_complete
@@ -53,7 +53,6 @@ func read_node() -> NodeData:
 			XMLParser.NODE_ELEMENT_END:
 				nd.node_name = get_node_name()
 				nd.is_open = false
-				nd.is_empty = true
 				is_finished = true
 			_:
 				is_finished = true
@@ -62,6 +61,6 @@ func read_node() -> NodeData:
 			is_finished = true
 			nd.is_complete = true
 
-	print("%s - is_open %s is_empty %s" % [nd.node_name, str(nd.is_open), str(nd.is_empty)])
+	# print("%s - is_open %s" % [nd.node_name, str(nd.is_open)])
 	
 	return nd
