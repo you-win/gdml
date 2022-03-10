@@ -9,9 +9,9 @@ var gui
 ###############################################################################
 
 func _ready() -> void:
-	var gdml = GDML.new("res://examples/everything/gui/everything.xml", "res://examples/everything/gui/")
+	var gdml = GDML.new("res://examples/everything/gui/")
 	
-	gui = gdml.output
+	gui = gdml.generate("everything.xml")
 	
 	add_child(gui)
 

@@ -1,13 +1,25 @@
 <gdml style="anchor_left: 0.5; anchor_right: 1.0; anchor_top: 0.1; anchor_bottom: 1.0">
-    <script src="test_script.gd" type="text/gdscript"/>
-    <script name="builtin_script" type="text/gdscript">
-extends Reference
+    <script src="test_script.gd"/>
+    <script name="builtin_script">
+extends Node
+
+func _ready():
+    get_meta("__parent__")
+    pass
+
+func _process(delta):
+    pass
 
 func add_one(x):
     return x + 1
 
 func _on_pressed():
     print("hello")
+
+    </script>
+    <script name="button_script">
+extends Button
+
 
     </script>
     <style>
@@ -32,10 +44,20 @@ VBoxContainer {
         <label>2</label>
         <v_box_container>
             <label>inner</label>
-            <button connect="pressed" callback="_on_pressed">hello</button>
+            <button pressed="builtin_script._on_pressed">hello</button>
+            <button src="button_script">using button_script</button>
         </v_box_container>
         <label>3</label>
     </v_box_container>
+
+    <script>
+func gives_true() -> bool:
+    return true
+    </script>
+    <script name="builtin_script">
+func _on_pressed():
+    print("not expected")
+    </script>
 </gdml>
 
 <gdml>
