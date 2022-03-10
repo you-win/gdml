@@ -13,7 +13,6 @@ var test_var = WrappedInt.new()
 
 func _ready():
     get_meta("__parent__")
-    pass
 
 func _process(delta):
     pass
@@ -21,9 +20,9 @@ func _process(delta):
 func add_one(x):
     return x + 1
 
-func _on_pressed(a, b, c, d):
+func _on_pressed(a, b, c, d, e):
     test_var.i += 1
-    print("%s %d %s %s" % [a, b, c, str(d)])
+    print("%s %d %s %s %s" % [a, b, c, str(d), e.give_test(test_var.i)])
 
 func _other_pressed():
     print("other")
@@ -57,7 +56,7 @@ VBoxContainer {
         <v_box_container>
             <label>inner</label>
             <button
-                pressed="builtin_script._on_pressed[self, (int) 1, 'string', builtin_script.test_var]"
+                pressed="builtin_script._on_pressed[self, (int) 1, 'string', builtin_script.test_var, test_script]"
                 button_down="gives_true"
             >
                 hello

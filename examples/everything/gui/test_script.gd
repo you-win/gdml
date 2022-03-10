@@ -1,4 +1,7 @@
 extends Reference
 
-func give_test() -> String:
-	return "test"
+var counter: int = 0
+
+func give_test(i) -> String:
+	counter += i
+	return "%s_%d" % ["test", counter]

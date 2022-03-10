@@ -123,6 +123,9 @@ func generate(input: String) -> Control:
 							node.name = val
 						"style":
 							style_handler.handle_inline_style(node, val)
+						"src":
+							# TODO stub
+							pass
 						_:
 							if node.has_signal(key) or node.has_user_signal(key):
 								var split_val: PoolStringArray = val.split(".", false, 1)
@@ -208,7 +211,12 @@ func _generate_connect_args(current_root: Control, node, text: String) -> Array:
 				r.append(val)
 			else:
 				var class_split: PoolStringArray = val.split(".", false)
-				r.append(current_root.find_variable(class_split[0], class_split[1]))
+				# TODO allow for multiple ".", probably needs to be recursive
+				match class_split.size():
+					1:
+						r.append(current_root.find_class(val))
+					2:
+						r.append(current_root.find_variable(class_split[0], class_split[1]))
 		else:
 			r.append(val)
 

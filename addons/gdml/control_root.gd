@@ -54,6 +54,9 @@ func add_instance(thing, descriptor: InstanceDescriptor) -> int:
 	
 	return OK
 
+func find_class(clazz: String):
+	return instances.get(clazz)
+
 func find_variable(clazz: String, thing: String):
 	var instance = instances.get(clazz)
 	if instance == null:
