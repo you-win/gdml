@@ -125,7 +125,7 @@ func generate(input: String) -> Control:
 							style_handler.handle_inline_style(node, val)
 						_:
 							if node.has_signal(key) or node.has_user_signal(key):
-								var split_val: PoolStringArray = val.split(".")
+								var split_val: PoolStringArray = val.split(".", false, 1)
 
 								match split_val.size():
 									1:
@@ -134,7 +134,10 @@ func generate(input: String) -> Control:
 											push_error("Error occurred when connecting %d" % err)
 											continue
 									2:
-										err = current_root.direct_connect(split_val[0], key, node, split_val[1])
+										var args = _generate_connect_args(current_root, node, split_val[1])
+										var callback_name := split_val[1].split("[")[0] if args.size() > 0 else split_val[1]
+
+										err = current_root.direct_connect(split_val[0], key, node, callback_name, args)
 										if err != OK:
 											push_error("Error occurred when connecting %d" % err)
 											continue
@@ -167,3 +170,46 @@ func _prepass(reader: Reader) -> Layout:
 	layout.hoist_scripts()
 
 	return layout
+
+func _generate_connect_args(current_root: Control, node, text: String) -> Array:
+	var r := []
+
+	var split := text.split("[", false)
+	if split.size() != 2:
+		return r
+
+	var args := split[1].rstrip("]").replace(" ", "")
+
+	var split_args := args.split(",")
+	for i in split_args:
+		var val
+
+		var cast_split: PoolStringArray = i.split(")")
+		if cast_split.size() == 2:
+			var j = cast_split[1]
+			match cast_split[0].lstrip("("):
+				"float":
+					val = float(j)
+				"int":
+					val = int(j)
+				"string":
+					val = j
+				"color":
+					val = Color(j)
+				"colorN":
+					val = ColorN(j)
+		else:
+			val = i
+		
+		if typeof(val) == TYPE_STRING:
+			if val == "self":
+				r.append(node)
+			elif val[0] == "'" or val[0] == '"':
+				r.append(val)
+			else:
+				var class_split: PoolStringArray = val.split(".", false)
+				r.append(current_root.find_variable(class_split[0], class_split[1]))
+		else:
+			r.append(val)
+
+	return r

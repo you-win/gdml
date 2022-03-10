@@ -59,10 +59,10 @@ func handle_inline_style(node: Control, raw_style: String) -> void:
 				for i in CONTROL_DIRECTIONS:
 					node.set("margin_%s" % i, float(val))
 			_:
-				var split_val := val.split("=")
+				var split_val := val.split(")")
 				if split_val.size() == 2:
-					val = split_val[1]
-					match split_val[0]:
+					val = split_val[1].replace(" ", "")
+					match split_val[0].replace(" ", "").lstrip("("):
 						"float":
 							node.set_indexed(key, float(val))
 						"int":

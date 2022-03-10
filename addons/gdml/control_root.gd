@@ -7,7 +7,7 @@ const InstanceDescriptor = preload("res://addons/gdml/instance_descriptor.gd")
 var instances := {} # Instance name: String -> Instance
 var auto_instance_count: int = 0 # Used for automatically generating unique instance keys
 
-var data := {} # Data name: String -> Variant
+var __data__ := {} # Data name: String -> Variant
 
 ###############################################################################
 # Builtin functions                                                           #
@@ -53,6 +53,13 @@ func add_instance(thing, descriptor: InstanceDescriptor) -> int:
 	instances[desc_name] = instance
 	
 	return OK
+
+func find_variable(clazz: String, thing: String):
+	var instance = instances.get(clazz)
+	if instance == null:
+		return null
+
+	return instance.get(thing)
 
 #region Connections
 

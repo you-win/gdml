@@ -3,6 +3,14 @@
     <script name="builtin_script">
 extends Node
 
+class WrappedInt:
+    var i = 2
+
+    func _to_string():
+        return str(i)
+
+var test_var = WrappedInt.new()
+
 func _ready():
     get_meta("__parent__")
     pass
@@ -13,8 +21,12 @@ func _process(delta):
 func add_one(x):
     return x + 1
 
-func _on_pressed():
-    print("hello")
+func _on_pressed(a, b, c, d):
+    test_var.i += 1
+    print("%s %d %s %s" % [a, b, c, str(d)])
+
+func _other_pressed():
+    print("other")
 
     </script>
     <script name="button_script">
@@ -44,7 +56,13 @@ VBoxContainer {
         <label>2</label>
         <v_box_container>
             <label>inner</label>
-            <button pressed="builtin_script._on_pressed">hello</button>
+            <button
+                pressed="builtin_script._on_pressed[self, (int) 1, 'string', builtin_script.test_var]"
+                button_down="gives_true"
+            >
+                hello
+            </button>
+            <button pressed="_other_pressed">hello 2</button>
             <button src="button_script">using button_script</button>
         </v_box_container>
         <label>3</label>
@@ -52,6 +70,7 @@ VBoxContainer {
 
     <script>
 func gives_true() -> bool:
+    print("true")
     return true
     </script>
     <script name="builtin_script">
@@ -65,10 +84,10 @@ func _on_pressed():
         name="margin_test"
         style="
             margin: 100;
-            custom_colors/font_color: colorN=Red;
+            custom_colors/font_color: (colorN) Red;
         "
     >
         margin test
     </button>
-    <label name="HelloLabel" style="anchor: 0.3; modulate: color=#ffb2d90a">Hello</label>
+    <label name="HelloLabel" style="anchor: 0.3; modulate: (color)#ffb2d90a">Hello</label>
 </gdml>
