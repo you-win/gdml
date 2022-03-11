@@ -323,17 +323,20 @@ func _handle_attribute(stack: GDML_Stack, object: Object, key: String, val: Stri
 		GDML_Constants.SRC:
 			var script: GDScript
 			
+			var local_stack: GDML_Stack = stack
 			var root: Control = stack.get_root()
 			while root != null:
 				var instance: Object = root.find_instance(val)
 				if instance == null:
 					# TODO this causes an infinite loop because the superstack is a cyclic reference
-					root = stack.get_super_root()
+					root = local_stack.get_super_root()
+					local_stack = local_stack.get_super_stack()
 					continue
 				
 				var instance_script: GDScript = instance.get_script()
 				if instance_script == null:
-					root = stack.get_super_root()
+					root = local_stack.get_super_root()
+					local_stack = local_stack.get_super_stack()
 					continue
 
 				script = instance_script.duplicate()

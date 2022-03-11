@@ -74,6 +74,10 @@ VBoxContainer {
         <gdml style="anchor: full_rect">
             <button src="button_script">Inner</button>
             <reference style="anchor: full_rect"/>
+            <gdml style="anchor: full_rect">
+                <button src="button_script">Inner</button>
+                <reference style="anchor: full_rect"/>
+            </gdml>
         </gdml>
     </gdml>
 

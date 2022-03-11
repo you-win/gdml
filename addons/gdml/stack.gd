@@ -30,6 +30,9 @@ func get_root() -> Control:
 func get_super_root() -> Control:
 	return _super_stack.get_root() if _super_stack != null else null
 
+func get_super_stack() -> GDML_Stack:
+	return _super_stack if _super_stack != null else null
+
 func _add_child(depth: int, object: Object) -> void:
 	_stack[-1].add_child(object)
 	_current_depth = depth
@@ -59,6 +62,3 @@ func add_child(depth: int, object: Object) -> int:
 	else:
 		return _stack[0].add_instance(object, GDML_InstanceDescriptor.new())
 	return OK
-
-func get_super_stack() -> GDML_Stack:
-	return _super_stack if _super_stack != null else null
