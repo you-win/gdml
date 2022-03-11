@@ -50,7 +50,7 @@ VBoxContainer {
     background: #333
 }
     </style>
-    <v_box_container style="anchor:full-rect">
+    <v_box_container style="anchor:full_rect">
         <label>1</label>
         <label>2</label>
         <v_box_container>
@@ -66,6 +66,16 @@ VBoxContainer {
         </v_box_container>
         <label>3</label>
     </v_box_container>
+    <!-- <gdml_popup/>
+    <test_scene/> -->
+    <gdml style="anchor: full_rect">
+        <button src="button_script">Inner</button>
+        <reference style="anchor: full_rect"/>
+        <gdml style="anchor: full_rect">
+            <button src="button_script">Inner</button>
+            <reference style="anchor: full_rect"/>
+        </gdml>
+    </gdml>
 
     <script>
 func gives_true() -> bool:

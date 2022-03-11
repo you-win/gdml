@@ -1,4 +1,5 @@
-extends "res://addons/gdml/handlers/abstract_handler.gd"
+class_name GDML_StyleHandler
+extends GDML_AbstractHandler
 
 const CONTROL_DIRECTIONS := ["top", "bottom", "left", "right"]
 

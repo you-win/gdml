@@ -1,7 +1,5 @@
 extends CanvasLayer
 
-const GDML = preload("res://addons/gdml/gdml.gd")
-
 var gui
 
 ###############################################################################

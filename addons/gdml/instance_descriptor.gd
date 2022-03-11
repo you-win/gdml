@@ -1,3 +1,4 @@
+class_name GDML_InstanceDescriptor
 extends Reference
 
 var name := ""

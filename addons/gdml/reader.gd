@@ -1,23 +1,5 @@
+class_name GDML_Reader
 extends XMLParser
-
-class NodeData:
-	var node_name := ""
-	var is_open := false
-	var attributes := {} # Attribute: String -> Attribute value: Variant
-	var text := ""
-	var is_complete := false # If we are done parsing the entire xml file
-
-	func _to_string() -> String:
-		return JSON.print(get_as_dict(), "\t")
-	
-	func get_as_dict() -> Dictionary:
-		return {
-			"node_name": node_name,
-			"is_open": is_open,
-			"attributes": attributes,
-			"text": text,
-			"is_complete": is_complete
-		}
 
 func read_path(path: String) -> int:
 	"""
@@ -31,11 +13,11 @@ func read_buffer(buffer: PoolByteArray) -> int:
 	"""
 	return open_buffer(buffer)
 
-func read_node() -> NodeData:
+func read_node() -> GDML_NodeData:
 	"""
 	Read extents of xml element
 	"""
-	var nd := NodeData.new()
+	var nd := GDML_NodeData.new()
 	
 	var is_finished := false
 	while not is_finished:
