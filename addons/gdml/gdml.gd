@@ -44,121 +44,12 @@ func generate(input: String) -> Control:
 	var script_handler = GDML_ScriptHandler.new(context_path)
 	var style_handler = GDML_StyleHandler.new(context_path)
 
-	# var previous_depth: int = 0
-	# var stack := [output]
-	
-	# var current_root: Control
-
 	var handled_pointer_pairs := []
 
 	for i in layout.gdml_pointers.size():
 		var gdml: Control = _handle_gdml(layout, i, handled_pointer_pairs)
 		if gdml != null:
 			output.add_child(gdml)
-		# output.add_child(_handle_gdml(layout, i))
-
-	# for pointer_pair in layout.gdml_pointers:
-	# 	output.add_child(_handle_gdml(layout.tags, pointer_pair))
-
-	# for tag in layout.tags:
-	# 	if not tag.is_open:
-	# 		continue
-	# 	var node_name: String = tag.name
-	# 	match node_name:
-	# 		GDML_Tags.SCRIPT:
-	# 			var script: GDScript = script_handler.handle_script(tag)
-	# 			if script == null:
-	# 				continue
-
-	# 			# TODO stub
-	# 			var desc := GDML_InstanceDescriptor.new()
-	# 			for key in tag.attributes.keys():
-	# 				desc.set(key, tag.attributes[key])
-
-	# 			current_root.add_instance(script, desc)
-	# 		GDML_Tags.STYLE:
-	# 			var themes: Dictionary = style_handler.handle_style(tag)
-	# 			if themes.empty():
-	# 				continue
-
-	# 			# TODO test
-	# 			current_root.theme = themes["default"]
-
-	# 			# TODO stub
-	# 		_:
-	# 			# Everything else is a node
-	# 			# Technically they should all be Controls, but I'm not the boss of you
-	# 			var node: Node
-	# 			if node_name == GDML_Tags.GDML:
-	# 				node = Control.new()
-	# 				node.set_anchors_preset(Control.PRESET_WIDE)
-	# 				node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	# 				current_root = node
-	# 				current_root.set_script(load(CONTROL_ROOT_PATH))
-
-	# 				# Reset stack
-	# 				previous_depth = 0
-	# 				while stack.size() > 1:
-	# 					stack.pop_back()
-	# 			else:
-	# 				var godot_class_name := (node_name as String).capitalize().replace(" ", "")
-	# 				if not ClassDB.class_exists(godot_class_name):
-	# 					push_error("Class does not exist %s" % godot_class_name)
-	# 					continue
-					
-	# 				node = ClassDB.instance(godot_class_name)
-
-	# 				if godot_class_name in TEXT_CONTROLS:
-	# 					node.text = tag.text
-				
-	# 			# Stack management
-	# 			if previous_depth < tag.depth:
-	# 				stack[-1].add_child(node)
-	# 				stack.append(node)
-	# 				previous_depth = tag.depth
-	# 			elif previous_depth == tag.depth:
-	# 				stack.pop_back()
-	# 				stack[-1].add_child(node)
-	# 				stack.push_back(node)
-	# 			else:
-	# 				stack.pop_back()
-	# 				stack.pop_back()
-	# 				stack[-1].add_child(node)
-	# 				previous_depth = tag.depth
-
-	# 			for key in tag.attributes.keys():
-	# 				var val = tag.attributes[key]
-
-	# 				match key:
-	# 					"name":
-	# 						node.name = val
-	# 					"style":
-	# 						style_handler.handle_inline_style(node, val)
-	# 					"src":
-	# 						# TODO stub
-	# 						pass
-	# 					_:
-	# 						if node.has_signal(key) or node.has_user_signal(key):
-	# 							var split_val: PoolStringArray = val.split(".", false, 1)
-
-	# 							match split_val.size():
-	# 								1:
-	# 									err = current_root.find_and_connect(key, node, val)
-	# 									if err != OK:
-	# 										push_error("Error occurred when connecting %d" % err)
-	# 										continue
-	# 								2:
-	# 									var args = _generate_connect_args(current_root, node, split_val[1])
-	# 									var callback_name := split_val[1].split("[")[0] if args.size() > 0 else split_val[1]
-
-	# 									err = current_root.direct_connect(split_val[0], key, node, callback_name, args)
-	# 									if err != OK:
-	# 										push_error("Error occurred when connecting %d" % err)
-	# 										continue
-	# 								_:
-	# 									push_error("Invalid callback for %s: %s - %s" %
-	# 										[node_name, key, val])
 
 	output.set_anchors_preset(Control.PRESET_WIDE)
 	output.name = "GDML"
@@ -289,6 +180,18 @@ func _handle_gdml(
 			push_error("Error occurred when handling %s tag\n%s" % [tag.name, str(tag)])
 			continue
 
+	#region Handle gdml tag
+
+	var gdml_tag: GDML_Tag = layout.tags[pointer_pair.a]
+	for key in gdml_tag.attributes.keys():
+		var val = gdml_tag.attributes[key]
+		var err: int = _handle_attribute(stack, root, key, gdml_tag.attributes[key])
+		if err != OK:
+			push_error("Error occurred while handling attribute for root gdml tag %s:%s %d" % [key, val, err])
+			continue
+
+	#endregion
+
 	return root
 
 func _handle_element(stack: GDML_Stack, tag: GDML_Tag) -> int:
@@ -365,6 +268,30 @@ func _handle_attribute(stack: GDML_Stack, object: Object, key: String, val: Stri
 		GDML_Constants.ID:
 			# TODO stub
 			pass
+		_: # Everything else is a connection
+			if not object.has_signal(key) and not object.has_user_signal(key):
+				continue
+
+			var split_val: PoolStringArray = val.split(".", false, 1)
+
+			match split_val.size():
+				# e.g. pressed="_on_pressed"
+				1:
+					var err = stack.get_root().find_and_connect(key, object, val)
+					if err != OK:
+						push_error("Error occurred when connecting %d" % err)
+						continue
+				2:
+					var args = _generate_connect_args(stack.get_root(), object, split_val[1])
+					var callback_name := split_val[1].split("[")[0] if args.size() > 0 else split_val[1]
+
+					var err = stack.get_root().direct_connect(split_val[0], key, object, callback_name, args)
+					if err != OK:
+						push_error("Error occurred when connecting %d" % err)
+						continue
+				_:
+					push_error("Invalid callback for %s - %s" %
+						[key, val])
 
 	return OK
 
