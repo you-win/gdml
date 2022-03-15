@@ -32,14 +32,24 @@ func generate(input: String) -> Control:
 		input = "%s/%s" % [context_path, input]
 	else: # The result of File.get_as_text()
 		is_path = false
-	
-	var reader = GDML_Reader.new()
-	var err = reader.read_path(input) if is_path else reader.read_buffer(input.to_utf8())
-	if err != OK:
-		push_error("Error %d occurred while opening %s" % [err, input if is_path else "buffer"])
-		return output
 
-	var layout := _prepass(reader)
+	# TODO testing
+	# var l = GDML_Layout.new()
+	# var parser := GDML_Parser.new(context_path)
+	# parser.parse(input, l)
+	# print(l)
+	
+	# var reader = GDML_Reader.new()
+	# var err = reader.read_path(input) if is_path else reader.read_buffer(input.to_utf8())
+	# if err != OK:
+	# 	push_error("Error %d occurred while opening %s" % [err, input if is_path else "buffer"])
+	# 	return output
+
+	# var layout := _prepass(reader)
+
+	var layout := GDML_Layout.new()
+	var parser := GDML_Parser.new(context_path)
+	parser.parse(input, layout)
 	
 	var script_handler = GDML_ScriptHandler.new(context_path)
 	var style_handler = GDML_StyleHandler.new(context_path)

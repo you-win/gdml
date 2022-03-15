@@ -5,13 +5,17 @@ func read_path(path: String) -> int:
 	"""
 	Wrapper around XMLParser.open(...) so that I can remember the API
 	"""
-	return open(path)
+	if open(path) != OK:
+		return GDML_Error.Code.OPEN_PATH_FAILURE
+	return OK
 
 func read_buffer(buffer: PoolByteArray) -> int:
 	"""
 	Wrapper around XMLParser.read_buffer(...) so that I can remember the API
 	"""
-	return open_buffer(buffer)
+	if open_buffer(buffer) != OK:
+		return GDML_Error.Code.OPEN_BUFFER_FAILURE
+	return OK
 
 func read_node() -> GDML_NodeData:
 	"""
