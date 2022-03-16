@@ -54,7 +54,7 @@ func _ready():
         <v_box_container>
             <label>inner</label>
             <button
-                pressed="builtin_script._on_pressed(self, (int) 1, 'string', builtin_script.test_var, test_script)"
+                pressed="builtin_script._on_pressed(self, (int) 1, 'string', builtin_script.test_var, test_script2)"
                 button_down="gives_true"
             >
                 hello
@@ -96,7 +96,7 @@ class WrappedInt:
 var test_var = WrappedInt.new()
 
 func _ready():
-    get_meta("__parent__")
+    print_debug(get_meta("__parent__"))
 
 func _process(delta):
     pass
