@@ -3,6 +3,7 @@ extends "res://addons/gdml/generator/handlers/abstract_handler.gd"
 const SCRIPT_NAME_TEMPLATE := "Script_%d"
 
 const Error = preload("res://addons/gdml/error.gd")
+const Constants = preload("res://addons/gdml/constants.gd")
 
 const Tag = preload("res://addons/gdml/parser/tag.gd")
 
@@ -17,7 +18,11 @@ func handle_script_tag(tag: Tag) -> int:
 	var script_name := ""
 
 	if tag.attributes.has("src"):
-		var file_name: String = tag.attributes["src"]
+		var file_name: String = tag.attributes[Constants.SRC]
+		script_name = file_name.get_basename()
+		
+		if known_scripts.has(script_name):
+			return OK
 
 		var file := File.new()
 		if file.open("%s/%s" % [context_path, file_name], File.READ) != OK:
@@ -25,10 +30,10 @@ func handle_script_tag(tag: Tag) -> int:
 			return Error.Code.FILE_OPEN_FAILURE
 
 		input = file.get_as_text()
-		script_name = file_name.get_basename()
 	else:
 		input = tag.text
-		script_name = SCRIPT_NAME_TEMPLATE % tag.location
+		script_name = (SCRIPT_NAME_TEMPLATE %
+			tag.location if not tag.attributes.has(Constants.NAME) else tag.attributes[Constants.NAME])
 
 	var script := GDScript.new()
 

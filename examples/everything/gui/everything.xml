@@ -7,32 +7,8 @@ func _init():
 <gdml style="anchor_left: 0.5; anchor_right: 1.0; anchor_top: 0.1; anchor_bottom: 1.0">
     <script src="test_script.gd"/>
     <script name="builtin_script">
-extends Node
-
-class WrappedInt:
-    var i = 2
-
-    func _to_string():
-        return str(i)
-
-var test_var = WrappedInt.new()
-
-func _ready():
-    get_meta("__parent__")
-
-func _process(delta):
-    pass
-
-func add_one(x):
-    return x + 1
-
-func _on_pressed(a, b, c, d, e):
-    test_var.i += 1
-    print("%s %d %s %s %s" % [a, b, c, str(d), e.give_test(test_var.i)])
-
-func _other_pressed():
-    print("other")
-
+func _on_pressed():
+    print("not expected")
     </script>
     <script src="test_script.gd" name="test_script2">
         <script>
@@ -109,8 +85,32 @@ func gives_true() -> bool:
     return true
     </script>
     <script name="builtin_script">
-func _on_pressed():
-    print("not expected")
+extends Node
+
+class WrappedInt:
+    var i = 2
+
+    func _to_string():
+        return str(i)
+
+var test_var = WrappedInt.new()
+
+func _ready():
+    get_meta("__parent__")
+
+func _process(delta):
+    pass
+
+func add_one(x):
+    return x + 1
+
+func _on_pressed(a, b, c, d, e):
+    test_var.i += 1
+    print("%s %d %s %s %s" % [a, b, c, str(d), e.give_test(test_var.i)])
+
+func _other_pressed():
+    print("other")
+
     </script>
 </gdml>
 

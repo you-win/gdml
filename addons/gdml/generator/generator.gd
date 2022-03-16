@@ -69,18 +69,32 @@ func _generate(tag: Tag, super_root: Control, gdml_stack: Array, parent: Object 
 			var gdml := Control.new()
 			gdml.set_anchors_preset(Control.PRESET_WIDE)
 			gdml.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			gdml.set_script(ControlRoot)
+			gdml.set_script(load("res://addons/gdml/generator/control_root.gd"))
+			
+			_handle_attributes(tag, gdml, super_root, gdml_stack)
 
 			gdml_stack.append(gdml)
 
+			# Hoist scripts
+			var visited_tags := [] # Tag
 			for child_tag in tag.children:
+				if child_tag.name != Constants.SCRIPT:
+					continue
+				visited_tags.append(child_tag)
+				err = _generate(child_tag, super_root, gdml_stack, gdml)
+				if err != OK:
+					push_error("Error occurred while generating script for tag %s" % tag.to_string())
+			
+			# Process the rest of the tags
+			for child_tag in tag.children:
+				if child_tag in visited_tags:
+					continue
 				err = _generate(child_tag, super_root, gdml_stack, gdml)
 				if err != OK:
 					push_error("Error occurred while generating resource for tag %s" % tag.to_string())
 
 			gdml_stack.pop_back()
 			
-			_handle_attributes(tag, gdml, super_root, gdml_stack)
 			parent.add_child(gdml) if parent != null else super_root.add_child(gdml)
 		Constants.SCRIPT:
 			var script_name: String = (
@@ -106,6 +120,9 @@ func _generate(tag: Tag, super_root: Control, gdml_stack: Array, parent: Object 
 				gdml_stack[-1].add_instance(script, _create_instance_descriptor(tag))
 			else:
 				super_root.add_instance(script, _create_instance_descriptor(tag))
+			
+			for tag_child in tag.children:
+				_generate(tag_child, super_root, gdml_stack, null)
 		Constants.STYLE:
 			# TODO cache themes first like with scripts
 			var themes: Dictionary = _style_handler.handle_style(tag)
@@ -119,11 +136,21 @@ func _generate(tag: Tag, super_root: Control, gdml_stack: Array, parent: Object 
 				gdml_stack[-1].theme = themes["default"]
 			else:
 				super_root.theme = themes["default"]
+			
+			for tag_child in tag.children:
+				_generate(tag_child, super_root, gdml_stack, null)
 		_:
-			err = _handle_element(tag, super_root, gdml_stack, parent)
-			if err != OK:
+			var object: Object = _handle_element(tag, super_root, gdml_stack, parent)
+			if object == null:
 				push_error("Unable to handle element for tag %s" % tag.to_string())
 				return Error.Code.HANDLE_ELEMENT_FAILURE
+			
+			gdml_stack.append(object)
+			
+			for tag_child in tag.children:
+				_generate(tag_child, super_root, gdml_stack, object)
+			
+			gdml_stack.pop_back()
 	
 	return err
 
@@ -134,9 +161,13 @@ static func _create_instance_descriptor(tag: Tag) -> InstanceDescriptor:
 
 	return r
 
-func _handle_element(tag: Tag, super_root: ControlRoot, gdml_stack: Array, parent: Object) -> int:
+func _handle_element(
+	tag: Tag,
+	super_root: ControlRoot,
+	gdml_stack: Array,
+	parent: Object
+) -> Object:
 	var object: Object
-
 	var godot_class_name := tag.name.capitalize().replace(" ", "")
 	if ClassDB.class_exists(godot_class_name):
 		object = ClassDB.instance(godot_class_name)
@@ -154,7 +185,7 @@ func _handle_element(tag: Tag, super_root: ControlRoot, gdml_stack: Array, paren
 
 	_handle_attributes(tag, object, super_root, gdml_stack)
 
-	return OK
+	return object
 
 func _handle_attributes(tag: Tag, object: Object, super_root: ControlRoot, gdml_stack: Array) -> int:
 	for key in tag.attributes.keys():
@@ -192,29 +223,32 @@ func _handle_connections(
 ) -> int:
 	if not object.has_signal(key) and not object.has_user_signal(key):
 		return Error.Code.NO_SIGNAL_FOUND
+	
+	var args := []
 
 	var dot_split: PoolStringArray = value.split(".", false, 1)
-	if dot_split.size() == 1:
-		if object.has_method(value):
-			object.connect(key, object, value)
-		else:
-			var err := OK
-			for gdml in gdml_stack:
-				err = gdml.find_and_connect(key, object, value)
-				if err == OK:
-					break
-			
-			if err != OK:
-				err = super_root.find_and_connect(key, object, value)
-			
-			if err != OK:
-				push_error("Unable to connect %s - %s for object %s" % [key, value, str(object)])
-				return err
-	else:
+	value = dot_split[0]
+	if dot_split.size() == 2:
 		var func_arg_split := dot_split[1].split("(", false, 1)
-		var args := []
+		value = func_arg_split[0]
 		if func_arg_split.size() == 2:
 			args.append_array(_generate_connect_args(func_arg_split[1], object, super_root, gdml_stack))
+		
+	if object.has_method(value):
+		object.connect(key, object, value, args)
+	else:
+		var err := OK
+		for gdml in gdml_stack:
+			err = gdml.find_and_connect(key, object, value, args)
+			if err == OK:
+				break
+		
+		if err != OK:
+			err = super_root.find_and_connect(key, object, value, args)
+		
+		if err != OK:
+			push_error("Unable to connect %s - %s for object %s" % [key, value, str(object)])
+			return err
 	
 	return OK
 
