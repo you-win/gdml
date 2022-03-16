@@ -1,5 +1,11 @@
-class_name GDML_Parser
 extends Reference
+
+const Error = preload("res://addons/gdml/error.gd")
+
+const Layout = preload("res://addons/gdml/parser/layout.gd")
+const NodeData = preload("res://addons/gdml/parser/node_data.gd")
+const Reader = preload("res://addons/gdml/parser/reader.gd")
+const Tag = preload("res://addons/gdml/parser/tag.gd")
 
 var context_path := ""
 
@@ -18,7 +24,7 @@ func _init(p_context_path: String = "") -> void:
 # Private functions                                                           #
 ###############################################################################
 
-func _process_nodes(reader: GDML_Reader) -> Array:
+func _process_nodes(reader: Reader) -> Array:
 	"""
 	Processes nodes for a given file in 3 steps
 
@@ -38,10 +44,13 @@ func _process_nodes(reader: GDML_Reader) -> Array:
 	var node_location: int = -1
 
 	while true:
-		var data: GDML_NodeData = reader.read_node()
+		var data: NodeData = reader.read_node()
 
 		if data.is_complete:
 			break
+		
+		if data.node_name.empty():
+			continue
 
 		node_location += 1
 		data.location = node_location
@@ -57,7 +66,7 @@ func _process_nodes(reader: GDML_Reader) -> Array:
 			stack.append(data)
 			node_stack.append(data)
 		else:
-			var open_node: GDML_NodeData = stack.pop_back()
+			var open_node: NodeData = stack.pop_back()
 			if open_node == null:
 				push_warning("No matching open node found for %s at location %d" % [node_name, node_location])
 				# Decrement here because we discard the tag
@@ -72,7 +81,7 @@ func _process_nodes(reader: GDML_Reader) -> Array:
 		var stack: Array = open_close_stack[tag_name]
 
 		if stack.size() > 0:
-			for i in stack: # GDML_NodeData
+			for i in stack: # NodeData
 				hanging_open_node_indices.append(i.location)
 
 	# TODO this could be done with an offset so we can just find and insert instead of iterating over
@@ -82,16 +91,17 @@ func _process_nodes(reader: GDML_Reader) -> Array:
 	for node_data in node_stack:
 		fixed_node_stack.append(node_data)
 		if node_data.location in hanging_open_node_indices:
-			var close_node := GDML_NodeData.new()
+			var close_node := NodeData.new()
 			close_node.copy_as_close(node_data)
 			fixed_node_stack.append(close_node)
 
 	return fixed_node_stack
 
-func _generate_layout(node_data: Array, layout: GDML_Layout) -> int:
+# TODO assign depth here as well for TCO?
+func _generate_layout(node_data: Array, layout: Layout) -> int:
 	var err := OK
 
-	for i in node_data: # GDML_NodeData
+	for i in node_data: # NodeData
 		if layout.finished:
 			err = layout.add_root_tag(i)
 		else:
@@ -99,11 +109,11 @@ func _generate_layout(node_data: Array, layout: GDML_Layout) -> int:
 				err = layout.down(i)
 			else:
 				err = layout.up()
-				if err == GDML_Error.Code.ALREADY_AT_ROOT_TAG:
+				if err == Error.Code.ALREADY_AT_ROOT_TAG:
 					err = layout.finish()
 
 		if err != OK:
-			push_error("Encountered %s while generating layout. Bailing out" % GDML_Error.to_error_name(err))
+			push_error("Encountered %s while generating layout. Bailing out" % Error.to_error_name(err))
 			return err
 
 	return err
@@ -112,22 +122,20 @@ func _generate_layout(node_data: Array, layout: GDML_Layout) -> int:
 # Public functions                                                            #
 ###############################################################################
 
-func parse(input: String, layout: GDML_Layout) -> int:
+func parse(input: String, layout: Layout) -> int:
 	var is_path := true
 	if input.is_abs_path():
 		input = ProjectSettings.globalize_path(input)
 	elif input.is_rel_path():
 		if context_path.empty():
-			push_error("A context path is required when using a relative path")
-			return GDML_Error.Code.MISSING_CONTEXT_PATH
+			return Error.Code.MISSING_CONTEXT_PATH
 	else:
 		is_path = false
 	
-	var reader := GDML_Reader.new()
+	var reader := Reader.new()
 	var err := reader.read_path(input) if is_path else reader.read_buffer(input.to_utf8())
 	if err != OK:
-		push_error("Error %s occurred while reading %s" %
-			[GDML_Error.to_error_name(err), input if is_path else "buffer"])
+		return Error.READER_READ_FAILURE
 	
 	var element_nodes: Array = _process_nodes(reader)
 	_generate_layout(element_nodes, layout)

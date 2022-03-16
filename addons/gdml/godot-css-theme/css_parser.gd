@@ -1,9 +1,8 @@
-class_name GCT_CSSParser
+const Stylesheet = preload("res://addons/gdml/godot-css-theme/stylesheet.gd")
 
 var _values = {}
 
-
-func parse(file_path: String) -> GCT_Stylesheet:
+func parse(file_path: String) -> Stylesheet:
 	_values = {}
 	var file = File.new()
 	if not file.file_exists(file_path):
@@ -68,7 +67,7 @@ func parse_text(content: String, path: String):
 		else:
 			result[""][tag] = value
 
-	return GCT_Stylesheet.new(result, path)
+	return Stylesheet.new(result, path)
 
 
 func _parse_classes(line: String) -> Dictionary:
@@ -78,7 +77,7 @@ func _parse_classes(line: String) -> Dictionary:
 		var trimmed: String = cls.strip_edges()
 		if trimmed.length() > 0:
 			var split = trimmed.split(":")
-			var state = split[1].strip_edges() if split.size() == 2 else GCT_Stylesheet.DEFAULT_STATE
+			var state = split[1].strip_edges() if split.size() == 2 else Stylesheet.DEFAULT_STATE
 			var key = split[0].strip_edges()
 			if not result.has(key):
 				result[key] = []

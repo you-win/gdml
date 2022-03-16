@@ -1,3 +1,9 @@
+<script>
+extends Reference
+
+func _init():
+    print("root level script")
+</script>
 <gdml style="anchor_left: 0.5; anchor_right: 1.0; anchor_top: 0.1; anchor_bottom: 1.0">
     <script src="test_script.gd"/>
     <script name="builtin_script">
@@ -28,6 +34,14 @@ func _other_pressed():
     print("other")
 
     </script>
+    <script src="test_script.gd" name="test_script2">
+        <script>
+extends Reference
+
+func _init():
+    print("hello nested script")
+        </script>
+    </script>
     <script name="button_script">
 extends Button
 
@@ -51,12 +65,20 @@ VBoxContainer {
 }
     </style>
     <v_box_container style="anchor:full_rect">
+        <script>
+extends VBoxContainer
+
+var test_val = 1
+
+func _ready():
+    print("hello vbox")
+        </script>
         <label>1</label>
         <label>2</label>
         <v_box_container>
             <label>inner</label>
             <button
-                pressed="builtin_script._on_pressed[self, (int) 1, 'string', builtin_script.test_var, test_script]"
+                pressed="builtin_script._on_pressed(self, (int) 1, 'string', builtin_script.test_var, test_script)"
                 button_down="gives_true"
             >
                 hello

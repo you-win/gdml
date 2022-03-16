@@ -1,4 +1,4 @@
-class_name GCT_Stylesheet
+extends Reference
 
 const DEFAULT_STATE = "normal"
 

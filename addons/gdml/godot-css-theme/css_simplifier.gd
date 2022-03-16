@@ -1,8 +1,9 @@
-class_name GCT_CSSSimplifier
+extends Reference
 
+const Stylesheet = preload("res://addons/gdml/godot-css-theme/stylesheet.gd")
 
 # TODO: write test for conflicting properties with base syntax
-func simplify(stylesheet: GCT_Stylesheet) -> GCT_Stylesheet:
+func simplify(stylesheet: Stylesheet) -> Stylesheet:
 	var values = {}
 
 	for class_group in stylesheet.get_class_groups():
@@ -10,7 +11,7 @@ func simplify(stylesheet: GCT_Stylesheet) -> GCT_Stylesheet:
 		for cls in stylesheet.get_classes(class_group):
 			values[class_group][cls] = {}
 
-			var new_props = stylesheet.get_class_properties(cls, class_group, GCT_Stylesheet.DEFAULT_STATE).duplicate(
+			var new_props = stylesheet.get_class_properties(cls, class_group, Stylesheet.DEFAULT_STATE).duplicate(
 				true
 			)
 
@@ -23,7 +24,7 @@ func simplify(stylesheet: GCT_Stylesheet) -> GCT_Stylesheet:
 				if props.has("color"):
 					var mapped_prop = (
 						"--colors-font-color"
-						if state == GCT_Stylesheet.DEFAULT_STATE
+						if state == Stylesheet.DEFAULT_STATE
 						else "--colors-font-color-%s" % state
 					)
 					new_props[mapped_prop] = props["color"]
@@ -64,9 +65,9 @@ func simplify(stylesheet: GCT_Stylesheet) -> GCT_Stylesheet:
 				if props.has("gap"):
 					new_props["--const-separation"] = props["gap"]
 
-			values[class_group][cls][GCT_Stylesheet.DEFAULT_STATE] = new_props
+			values[class_group][cls][Stylesheet.DEFAULT_STATE] = new_props
 
-	return GCT_Stylesheet.new(values, stylesheet.get_css_file())
+	return Stylesheet.new(values, stylesheet.get_css_file())
 
 
 func _shorthand_sides(

@@ -1,4 +1,3 @@
-class_name GDML_Constants
 extends Reference
 
 #region Tags
@@ -19,6 +18,9 @@ const STYLE := "style"
 const NAME := "name"
 # const STYLE := "style" # We already have a style attribute :D
 const SRC := "src"
+
+const ATTACH := "attach"
+
 const CLASS := "class"
 const ID := "id"
 

@@ -1,4 +1,3 @@
-class_name GDML_NodeData
 extends Reference
 
 var node_name := ""
@@ -22,7 +21,7 @@ func get_as_dict() -> Dictionary:
 		"is_complete": is_complete
 	}
 
-func copy_as_close(nd: GDML_NodeData) -> void:
+func copy_as_close(nd) -> void:
 	"""
 	Helper for generating a dummy close tag for a hanging open tag
 	"""

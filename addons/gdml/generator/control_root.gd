@@ -2,7 +2,7 @@ extends Control
 
 const META_KEY := "__parent__"
 
-const InstanceDescriptor = preload("res://addons/gdml/instance_descriptor.gd")
+const InstanceDescriptor = preload("res://addons/gdml/generator/instance_descriptor.gd")
 
 var instances := {} # Instance name: String -> Instance
 var auto_instance_count: int = 0 # Used for automatically generating unique instance keys

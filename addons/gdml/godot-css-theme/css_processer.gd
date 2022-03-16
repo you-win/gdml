@@ -1,9 +1,8 @@
-class_name GDMl_CSSProcessor
 extends Reference
 
-var css_parser = GCT_CSSParser.new()
-var theme_applier = GCT_ThemeApplier.new()
-var css_simplifier = GCT_CSSSimplifier.new()
+var css_parser = preload("res://addons/gdml/godot-css-theme/css_parser.gd").new()
+var theme_applier = preload("res://addons/gdml/godot-css-theme/theme_applier.gd").new()
+var css_simplifier = preload("res://addons/gdml/godot-css-theme/css_simplifier.gd").new()
 
 # Each class is plit into a different theme
 var output := {} # Theme name: String -> Theme

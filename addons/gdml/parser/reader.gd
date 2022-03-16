@@ -1,12 +1,15 @@
-class_name GDML_Reader
 extends XMLParser
+
+const Error = preload("res://addons/gdml/error.gd")
+
+const NodeData = preload("res://addons/gdml/parser/node_data.gd")
 
 func read_path(path: String) -> int:
 	"""
 	Wrapper around XMLParser.open(...) so that I can remember the API
 	"""
 	if open(path) != OK:
-		return GDML_Error.Code.OPEN_PATH_FAILURE
+		return Error.Code.OPEN_PATH_FAILURE
 	return OK
 
 func read_buffer(buffer: PoolByteArray) -> int:
@@ -14,14 +17,14 @@ func read_buffer(buffer: PoolByteArray) -> int:
 	Wrapper around XMLParser.read_buffer(...) so that I can remember the API
 	"""
 	if open_buffer(buffer) != OK:
-		return GDML_Error.Code.OPEN_BUFFER_FAILURE
+		return Error.Code.OPEN_BUFFER_FAILURE
 	return OK
 
-func read_node() -> GDML_NodeData:
+func read_node() -> NodeData:
 	"""
 	Read extents of xml element
 	"""
-	var nd := GDML_NodeData.new()
+	var nd := NodeData.new()
 	
 	var is_finished := false
 	while not is_finished:

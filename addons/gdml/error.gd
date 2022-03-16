@@ -1,13 +1,14 @@
-class_name GDML_Error
 extends Reference
 
 enum Code {
 	NONE = 0,
 	
 	MISSING_CONTEXT_PATH,
+	FILE_OPEN_FAILURE,
 	
 	#region Reader
 	
+	READER_READ_FAILURE,
 	OPEN_PATH_FAILURE,
 	OPEN_BUFFER_FAILURE,
 	
@@ -21,6 +22,21 @@ enum Code {
 	NO_CURRENT_TAG,
 	NO_PARENT_FOR_CURRENT_TAG,
 
+	#endregion
+	
+	#region Generator
+	
+	BAD_SCRIPT_TAG,
+	BAD_SCRIPT_TEXT,
+	UNKNOWN_SCRIPT,
+	SCRIPT_HOIST_ERROR,
+	
+	NO_SIGNAL_FOUND,
+	
+	NO_THEMES_PARSED,
+	
+	HANDLE_ELEMENT_FAILURE,
+	
 	#endregion
 }
 

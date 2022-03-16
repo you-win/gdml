@@ -1,9 +1,8 @@
-class_name GDML_StyleHandler
-extends GDML_AbstractHandler
+extends "res://addons/gdml/generator/handlers/abstract_handler.gd"
 
 const CONTROL_DIRECTIONS := ["top", "bottom", "left", "right"]
 
-const CssProcessor = preload("res://addons/gdml/css_processer.gd")
+const CssProcessor = preload("res://addons/gdml/godot-css-theme/css_processer.gd")
 
 func _init(p_context_path: String).(p_context_path) -> void:
 	pass

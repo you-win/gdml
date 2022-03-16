@@ -7,7 +7,7 @@ var gui
 ###############################################################################
 
 func _ready() -> void:
-	var gdml = GDML.new("res://examples/everything/gui/")
+	var gdml = load("res://addons/gdml/gdml.gd").new("res://examples/everything/gui/")
 	
 	gui = gdml.generate("everything.xml")
 	

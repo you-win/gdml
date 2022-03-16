@@ -1,4 +1,3 @@
-class_name GDML_InstanceDescriptor
 extends Reference
 
 var name := ""
@@ -6,10 +5,11 @@ var src := ""
 
 func get_name() -> String:
 	var r := ""
-
+	
 	if not name.empty():
 		r = name
 	elif not src.empty():
-		r = src.get_file().replace(".gd", "")
-
+		# basename is used to differentiate files with the same name but in different paths
+		r = src.get_basename()
+	
 	return r

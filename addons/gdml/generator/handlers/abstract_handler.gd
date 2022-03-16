@@ -1,4 +1,3 @@
-class_name GDML_AbstractHandler
 extends Reference
 
 var context_path := ""

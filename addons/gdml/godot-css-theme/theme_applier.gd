@@ -1,4 +1,6 @@
-class_name GCT_ThemeApplier
+extends Reference
+
+const Stylesheet = preload("res://addons/gdml/godot-css-theme/stylesheet.gd")
 
 var EMPTY_STYLE = StyleBoxEmpty.new()
 
@@ -9,7 +11,7 @@ func _init(debug := false):
 	_debug = debug
 
 
-func apply_css(stylesheet: GCT_Stylesheet) -> Dictionary:
+func apply_css(stylesheet: Stylesheet) -> Dictionary:
 	var result = {}
 
 	for class_group in stylesheet.get_class_groups():
@@ -20,7 +22,7 @@ func apply_css(stylesheet: GCT_Stylesheet) -> Dictionary:
 	return result
 
 
-func _apply_to_theme(theme: Theme, stylesheet: GCT_Stylesheet, class_group: String) -> void:
+func _apply_to_theme(theme: Theme, stylesheet: Stylesheet, class_group: String) -> void:
 	for node_type in stylesheet.get_classes(class_group):
 		if _debug:
 			print("Setting properties for %s" % node_type)
@@ -118,7 +120,7 @@ func _get_properties(obj: Object) -> Array:
 	return result
 
 
-func _create_value(stylesheet: GCT_Stylesheet, value: String):
+func _create_value(stylesheet: Stylesheet, value: String):
 	var url = stylesheet.resolve_url(value)
 	if url != "":
 		return url
