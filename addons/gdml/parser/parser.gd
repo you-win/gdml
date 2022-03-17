@@ -84,20 +84,17 @@ func _process_nodes(reader: Reader) -> Array:
 			for i in stack: # NodeData
 				hanging_open_node_indices.append(i.location)
 
-	# TODO this could be done with an offset so we can just find and insert instead of iterating over
-	# every node again
-	var fixed_node_stack := []
+	var insert_offset: int = 0
+	for idx in hanging_open_node_indices:
+		var adjusted_idx: int = idx + insert_offset
+		insert_offset += 1
+		
+		var close_node := NodeData.new()
+		close_node.copy_as_close(node_stack[adjusted_idx])
+		node_stack.insert(adjusted_idx + 1, close_node)
 
-	for node_data in node_stack:
-		fixed_node_stack.append(node_data)
-		if node_data.location in hanging_open_node_indices:
-			var close_node := NodeData.new()
-			close_node.copy_as_close(node_data)
-			fixed_node_stack.append(close_node)
+	return node_stack
 
-	return fixed_node_stack
-
-# TODO assign depth here as well for TCO?
 func _generate_layout(node_data: Array, layout: Layout) -> int:
 	var err := OK
 
