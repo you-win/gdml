@@ -99,19 +99,16 @@ func _generate_layout(node_data: Array, layout: Layout) -> int:
 	var err := OK
 
 	for i in node_data: # NodeData
-		if layout.finished:
-			err = layout.add_root_tag(i)
+		if i.is_open:
+			err = layout.down(i)
 		else:
-			if i.is_open:
-				err = layout.down(i)
-			else:
-				err = layout.up()
-				if err == Error.Code.ALREADY_AT_ROOT_TAG:
-					err = layout.finish()
+			err = layout.up(i)
 
 		if err != OK:
 			push_error("Encountered %s while generating layout. Bailing out" % Error.to_error_name(err))
 			return err
+
+	err = layout.verify()
 
 	return err
 

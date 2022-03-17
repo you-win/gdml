@@ -1,81 +1,100 @@
 extends Reference
 
+const Constants = preload("res://addons/gdml/constants.gd")
 const Error = preload("res://addons/gdml/error.gd")
 
 const NodeData = preload("res://addons/gdml/parser/node_data.gd")
 const Tag = preload("res://addons/gdml/parser/tag.gd")
 
-var tags := []
+const UNNESTABLE_TAGS := [Constants.SCRIPT, Constants.STYLE]
 
-var current_root: Tag
-var current_tag: Tag
-var finished := true
+var tags := [] # Tag
 
-var depth: int = -1
+#region Script hoist tracking
 
-func add_root_tag(data: NodeData) -> int:
-	"""
-	Follows a pseudo builder pattern. Must be finished processing before adding
-	a new root tag
-	"""
-	if not finished:
-		return Error.Code.NOT_FINISHED_PROCESSING_TAG
+class Hoister:
+	var gdml_location: int
+	var gdml_depth: int
 
-	finished = false
-	depth = 0
+	var scripts := [] # Tag index in tags array
 
-	var tag := Tag.new(data.node_name, data.attributes, data.text, data.location, depth)
-	tag.depth = depth
+	func _init(p_gdml_location: int, p_gdml_depth: int) -> void:
+		gdml_location = p_gdml_location
+		gdml_depth = p_gdml_depth
 
-	tags.append(tag)
-	
-	current_root = tag
-	current_tag = current_root
+	func apply(ref_dict: Dictionary) -> void:
+		ref_dict[gdml_location] = scripts.duplicate()
 
-	return OK
+var gdml_script_tags := {} # GDML location: int -> Script tags: Array[int]
+var _hoist_stack := [] # Hoister
+
+#endregion
+
+var _depth: int = 0
 
 func down(data: NodeData) -> int:
 	"""
 	Adds a new tag and continues processing as the new tag
 	"""
-	if current_tag == null:
-		return Error.Code.NO_CURRENT_TAG
+	_depth += 1
 
-	depth += 1
+	var tag := Tag.new(data.node_name, data.attributes, data.text, data.location, _depth)
+	tag.depth = _depth
 
-	var tag := Tag.new(data.node_name, data.attributes, data.text, data.location, depth)
-	tag.depth
+	# Some tags cannot be nested so they are unnested before processing
+	# This is because there's no logical way to handle nesting in some cases
+	#
+	# Example:
+	# <script>
+	# 	<script>
+	# 	</script>
+	# </script>
+	# The inner script tag could be applied to the outer script tag but what if
+	# the out script tag is never created? Thus pretend like the tags are at the
+	# same depth
+	#
+	# NOTE The Layout._depth is not modified, since the open/close tags
+	# should still be properly tracked
+	if tags.size() > 0 and tag in UNNESTABLE_TAGS:
+		var last_tag: Tag = tags.back()
+		if last_tag in UNNESTABLE_TAGS and last_tag.depth < tag.depth:
+			tag.depth = last_tag.depth
+
+	match tag.name:
+		Constants.GDML:
+			_hoist_stack.append(Hoister.new(tag.location, tag.depth))
+		Constants.SCRIPT:
+			# Pre-hoist scripts
+			if _hoist_stack.empty():
+				continue
+			if _hoist_stack[-1].gdml_depth + 1 == tag.depth:
+				_hoist_stack[-1].scripts.append(tag)
 
 	tags.append(tag)
 
-	current_tag = tag
-
 	return OK
 
-func up() -> int:
+func up(data: NodeData) -> int:
 	"""
 	Steps up into the parent tag
 	"""
-	depth -= 1
+	_depth -= 1
 
-	if current_tag == current_root or depth < 0:
-		return Error.Code.ALREADY_AT_ROOT_TAG
+	if _depth < -1:
+		_depth = 0
+		return Error.Code.HANGING_CLOSE_TAG
+
+	match data.node_name:
+		Constants.GDML:
+			_hoist_stack.pop_back().apply(gdml_script_tags)
 
 	return OK
 
-func finish() -> int:
-	"""
-	Finalizes the current tag chain and appends it to the list of known tags
-	"""
-	if finished:
-		return Error.Code.ALREADY_FINISHED
-
-	finished = true
-	depth = -1 # We don't zero this out so it's obvious when there's an error
-
-	tags.append(current_root)
-
-	current_root = null
-	current_tag = null
+func verify() -> int:
+	if _depth != -1:
+		return Error.Code.HANGING_OPEN_TAG
+	
+	if _hoist_stack.size() > 0:
+		return Error.Code.HANGING_OPEN_TAG
 
 	return OK

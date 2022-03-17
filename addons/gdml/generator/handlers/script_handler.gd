@@ -1,7 +1,5 @@
 extends "res://addons/gdml/generator/handlers/abstract_handler.gd"
 
-const SCRIPT_NAME_TEMPLATE := "Script_%d"
-
 const Error = preload("res://addons/gdml/error.gd")
 const Constants = preload("res://addons/gdml/constants.gd")
 
@@ -32,7 +30,7 @@ func handle_script_tag(tag: Tag) -> int:
 		input = file.get_as_text()
 	else:
 		input = tag.text
-		script_name = (SCRIPT_NAME_TEMPLATE %
+		script_name = (Constants.SCRIPT_NAME_TEMPLATE %
 			tag.location if not tag.attributes.has(Constants.NAME) else tag.attributes[Constants.NAME])
 
 	var script := GDScript.new()
@@ -52,13 +50,10 @@ func _populate_script(script: GDScript, text: String) -> int:
 
 	return OK
 
-func find_script(tag: Tag, text: String) -> GDScript:
-	var script: GDScript = known_scripts.get(text)
-	if script != null:
-		return script
-
-	script = known_scripts.get(text.get_basename())
-	if script != null:
-		return script
-
-	return known_scripts.get(SCRIPT_NAME_TEMPLATE % tag.location)
+func find_script(script_name: String) -> GDScript:
+	return known_scripts.get(
+		script_name,
+		known_scripts.get(
+			script_name.get_basename(),
+			known_scripts.get(
+				script_name.get_file())))

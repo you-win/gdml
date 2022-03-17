@@ -2,7 +2,8 @@ extends Control
 
 const META_KEY := "__parent__"
 
-const InstanceDescriptor = preload("res://addons/gdml/generator/instance_descriptor.gd")
+const Constants = preload("res://addons/gdml/constants.gd")
+const Tag = preload("res://addons/gdml/parser/tag.gd")
 
 var instances := {} # Instance name: String -> Instance
 var auto_instance_count: int = 0 # Used for automatically generating unique instance keys
@@ -29,7 +30,7 @@ func _init() -> void:
 # Public functions                                                            #
 ###############################################################################
 
-func add_instance(thing, descriptor: InstanceDescriptor) -> int:
+func add_instance(thing, instance_name: String) -> int:
 	var instance: Object
 	if thing is Script:
 		instance = thing.new()
@@ -41,20 +42,10 @@ func add_instance(thing, descriptor: InstanceDescriptor) -> int:
 		instance = thing
 	else: # Primitives are not valid instances
 		return ERR_INVALID_PARAMETER
-
-	var desc_name := descriptor.get_name()
-
-	if desc_name.empty():
-		var clazz_name = instance.get_class()
-		desc_name = ("%s_%d" % [clazz_name, auto_instance_count])
-	
-		while instances.has(desc_name):
-			auto_instance_count += 1
-			desc_name = ("%s_%d" % [clazz_name, auto_instance_count])
 	
 	instance.set_meta(META_KEY, self)
 	
-	instances[desc_name] = instance
+	instances[instance_name] = instance
 	
 	return OK
 

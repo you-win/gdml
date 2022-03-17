@@ -2,20 +2,22 @@ extends Reference
 
 const Error = preload("res://addons/gdml/error.gd")
 
-var _super_root: Control = null
-var _super_stack: Reference = null
-var _stack := []
+# Stack containing all objects by depth
+# This means that when the depth increases, objects are added to the stack
+# When the depth decreases, objects are popped from the stack
+var _stack := [] # Object
+# The indices in the stack where a GDML object was inserted
+var _gdml_locations := [] # int
 
-var _depth: int = 0
+var _depth: int = -1
 
 ###############################################################################
 # Builtin functions                                                           #
 ###############################################################################
 
-func _init(super_root: Control, gdml_root: Control = null, super_stack: Reference = null) -> void:
-	_super_root = super_root
-	_super_stack = super_stack
-	_stack.append(gdml_root)
+func _init(super_root: Control) -> void:
+	_stack.append(super_root)
+	_gdml_locations.append(_stack.size() - 1)
 
 ###############################################################################
 # Connections                                                                 #
@@ -40,19 +42,20 @@ func pop() -> Object:
 	if _stack.size() <= 1:
 		push_error("Tried to pop root object from the stack")
 		return null
+	if _stack.size() - 1 in _gdml_locations:
+		_gdml_locations.pop_back()
 	return _stack.pop_back()
 
-func get_stack_root() -> Control:
+func root() -> Control:
 	return _stack[0]
 
-func get_stack_top() -> Object:
+func top() -> Object:
 	return _stack[-1]
 
-func get_super_stack() -> Reference:
-	return _super_stack
-
-func is_root_stack() -> bool:
-	return _super_stack == null
+func add_gdml(depth: int, gdml: Control) -> int:
+	_gdml_locations.append(_stack.size() - 1)
+	
+	return add_child(depth, gdml)
 
 func add_child(depth: int, object: Object, param = null) -> int:
 	"""
@@ -63,25 +66,24 @@ func add_child(depth: int, object: Object, param = null) -> int:
 		param - Duck-typed value for scripts. Could be an InstanceDescriptor or a String name
 	"""
 	if object.is_class("Node"):
-		if _depth == depth:
+		if _depth < depth:
+			_add_child(depth, object)
+			push(object)
+		elif _depth == depth:
 			if pop() == null:
 				return Error.Code.BAD_STACK
 			_add_child(depth, object)
 			push(object)
-		elif _depth > depth:
-			if pop() == null:
-				return Error.Code.BAD_STACK
-			if pop() == null:
-				return Error.Code.BAD_STACK
+		else:
+			while _stack.size() > depth:
+				pop()
+			
 			_add_child(depth, object)
-		
-		_add_child(depth, object)
-		push(object)
 	else:
 		if _stack.size() == 1:
-			return get_stack_root().add_instance(object, param)
+			return root().add_instance(object, param)
 		else:
-			var stack_top: Object = get_stack_top()
+			var stack_top: Object = top()
 			
 			if stack_top.is_class("Node"):
 				stack_top.set_script(object)
@@ -89,3 +91,23 @@ func add_child(depth: int, object: Object, param = null) -> int:
 				stack_top.set_meta(param, object)
 	
 	return OK
+
+func find_name_in_stack(node_name: String) -> Object:
+	for i in _stack:
+		if i.get("name") == node_name:
+			return i
+	return null
+
+func find_object_for_signal_in_stack(signal_name: String) -> Object:
+	for i in _stack:
+		if i.has_signal(signal_name) or i.has_user_signal(signal_name):
+			return i
+	return null
+
+func find_instance(instance_name: String) -> Object:
+	for i in _gdml_locations:
+		var instance = _stack[i].find_instance(instance_name)
+		if instance != null:
+			return instance
+
+	return null
