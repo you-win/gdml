@@ -1,14 +1,5 @@
 extends Reference
 
-const NodeData = preload("res://addons/gdml/parser/node_data.gd")
-
-#region Layout metadata
-
-var parent: Reference = null
-var children := []
-
-#endregion
-
 #region Parser metadata
 
 var location: int = -1
@@ -20,12 +11,13 @@ var name := ""
 var attributes := {}
 var text := ""
 
-func _init(node_data: NodeData, depth: int) -> void:
-	name = node_data.node_name
-	attributes = node_data.attributes
-	text = node_data.text
+func _init(p_name: String, p_attr: Dictionary, p_text: String, p_loc: int, p_depth: int) -> void:
+	name = p_name
+	attributes = p_attr
+	text = p_text
 	
-	location = node_data.location
+	location = p_loc
+	depth = p_depth
 
 func _to_string() -> String:
 	return JSON.print(get_as_dict(), "\t")

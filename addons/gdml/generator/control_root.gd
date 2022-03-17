@@ -13,6 +13,10 @@ var __data__ := {} # Data name: String -> Variant
 # Builtin functions                                                           #
 ###############################################################################
 
+func _init() -> void:
+	set_anchors_preset(Control.PRESET_WIDE)
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 ###############################################################################
 # Connections                                                                 #
 ###############################################################################

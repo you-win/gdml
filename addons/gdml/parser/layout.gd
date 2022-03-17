@@ -24,7 +24,10 @@ func add_root_tag(data: NodeData) -> int:
 	finished = false
 	depth = 0
 
-	var tag := Tag.new(data, depth)
+	var tag := Tag.new(data.node_name, data.attributes, data.text, data.location, depth)
+	tag.depth = depth
+
+	tags.append(tag)
 	
 	current_root = tag
 	current_tag = current_root
@@ -40,9 +43,10 @@ func down(data: NodeData) -> int:
 
 	depth += 1
 
-	var tag := Tag.new(data, depth)
-	current_tag.children.append(tag)
-	tag.parent = current_tag
+	var tag := Tag.new(data.node_name, data.attributes, data.text, data.location, depth)
+	tag.depth
+
+	tags.append(tag)
 
 	current_tag = tag
 
@@ -56,8 +60,6 @@ func up() -> int:
 
 	if current_tag == current_root or depth < 0:
 		return Error.Code.ALREADY_AT_ROOT_TAG
-
-	current_tag = current_tag.parent
 
 	return OK
 

@@ -14,6 +14,7 @@ const Tag = preload("res://addons/gdml/parser/tag.gd")
 
 const ControlRoot = preload("res://addons/gdml/generator/control_root.gd")
 const InstanceDescriptor = preload("res://addons/gdml/generator/instance_descriptor.gd")
+const Stack = preload("res://addons/gdml/generator/stack.gd")
 
 var _context_path := ""
 
@@ -46,116 +47,125 @@ static func _cache_scripts(sh: ScriptHandler, tags: Array) -> int:
 	for tag in tags:
 		if tag.name == Constants.SCRIPT or tag.attributes.has(Constants.SRC):
 			sh.handle_script_tag(tag)
-		_cache_scripts(sh, tag.children)
 
 	return OK
 
-# TODO gdml stack should be searched in reverse order?
-func _generate(tag: Tag, super_root: Control, gdml_stack: Array) -> int:
-	"""
-	Params:
-		tag: Tag - The current tag being processed
-		super_root: Control - The root node containing all GDML elements
-		gdml_stack: Array - The stack of GDML tags that are being processed
-		parent: Object - The parent object (generated from the parent tag) of the current tag
-
-	Return:
-		int - Error code
-	"""
+func _generate(super_root: ControlRoot, tag: Tag, stack: Stack) -> int:
 	var err := OK
-	
+
 	match tag.name:
 		Constants.GDML:
-			var gdml := Control.new()
-			gdml.set_anchors_preset(Control.PRESET_WIDE)
-			gdml.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			gdml.set_script(ControlRoot)
-			
-			_handle_attributes(tag, gdml, super_root, gdml_stack)
+			var gdml := ControlRoot.new()
 
-			gdml_stack.append(gdml)
+			_handle_attributes(tag, gdml, super_root, stack)
 
-			# Hoist scripts
-			var visited_tags := [] # Tag
-			for child_tag in tag.children:
-				if child_tag.name != Constants.SCRIPT:
-					continue
-				visited_tags.append(child_tag)
-				err = _generate(child_tag, super_root, gdml_stack)
-				if err != OK:
-					push_error("Error occurred while generating script for tag %s" % tag.to_string())
-			
-			# Process the rest of the tags
-			for child_tag in tag.children:
-				if child_tag in visited_tags:
-					continue
-				err = _generate(child_tag, super_root, gdml_stack)
-				if err != OK:
-					push_error("Error occurred while generating resource for tag %s" % tag.to_string())
-
-			gdml_stack.pop_back()
-			
-			gdml_stack[-1].add_child(gdml) if gdml_stack.size() > 0 else super_root.add_child(gdml)
-		Constants.SCRIPT:
-			var script_name: String = (
-				tag.attributes.get(Constants.SRC) if tag.attributes.has(Constants.SRC) else (
-					tag.attributes.get(Constants.NAME) if tag.attributes.has(Constants.NAME) else (
-						ScriptHandler.SCRIPT_NAME_TEMPLATE % tag.location
-					)
-				)
-			)
-			
-			var script: GDScript = _script_handler.find_script(tag, script_name)
-
-			if script == null:
-				push_error("Script is not known for tag %s" % tag.to_string())
-				return Error.Code.UNKNOWN_SCRIPT
-
-			if gdml_stack.size() > 0:
-				if not gdml_stack[-1] is ControlRoot:
-					if gdml_stack[-1].is_class("Node"):
-						gdml_stack[-1].set_script(script)
-					else: # References and objects cannot have their script replaced, so just add it as a meta var
-						gdml_stack[-1].set_meta(script_name, script.new())
-				else:
-					gdml_stack[0].add_instance(script, _create_instance_descriptor(tag))
-			else:
-				super_root.add_instance(script, _create_instance_descriptor(tag))
-			
-			for tag_child in tag.children:
-				_generate(tag_child, super_root, gdml_stack)
-		Constants.STYLE:
-			# TODO cache themes first like with scripts
-			var themes: Dictionary = _style_handler.handle_style(tag)
-			if themes.empty():
-				return Error.Code.NO_THEMES_PARSED
-			
-			# TODO this always uses the default theme
-			# TODO refactor to uses smarter stack
-			if gdml_stack.size() > 0:
-				if gdml_stack[-1].is_class("Control"):
-					gdml_stack[-1].theme = themes["default"]
-				else:
-					gdml_stack[0].theme = themes["default"]
-			else:
-				super_root.theme = themes["default"]
-			
-			for tag_child in tag.children:
-				_generate(tag_child, super_root, gdml_stack)
-		_:
-			var object: Object = _handle_element(tag, super_root, gdml_stack)
-			if object == null:
-				push_error("Unable to handle element for tag %s" % tag.to_string())
-				return Error.Code.HANDLE_ELEMENT_FAILURE
-			
-			gdml_stack.append(object)
-			
-			for tag_child in tag.children:
-				_generate(tag_child, super_root, gdml_stack)
-			
-			gdml_stack.pop_back()
-	
 	return err
+
+# func _generate(tag: Tag, super_root: Control, gdml_stack: Array) -> int:
+# 	"""
+# 	Params:
+# 		tag: Tag - The current tag being processed
+# 		super_root: Control - The root node containing all GDML elements
+# 		gdml_stack: Array - The stack of GDML tags that are being processed
+# 		parent: Object - The parent object (generated from the parent tag) of the current tag
+
+# 	Return:
+# 		int - Error code
+# 	"""
+# 	var err := OK
+	
+# 	match tag.name:
+# 		Constants.GDML:
+# 			var gdml := Control.new()
+# 			gdml.set_anchors_preset(Control.PRESET_WIDE)
+# 			gdml.mouse_filter = Control.MOUSE_FILTER_IGNORE
+# 			gdml.set_script(ControlRoot)
+			
+# 			_handle_attributes(tag, gdml, super_root, gdml_stack)
+
+# 			gdml_stack.append(gdml)
+
+# 			# Hoist scripts
+# 			var visited_tags := [] # Tag
+# 			for child_tag in tag.children:
+# 				if child_tag.name != Constants.SCRIPT:
+# 					continue
+# 				visited_tags.append(child_tag)
+# 				err = _generate(child_tag, super_root, gdml_stack)
+# 				if err != OK:
+# 					push_error("Error occurred while generating script for tag %s" % tag.to_string())
+			
+# 			# Process the rest of the tags
+# 			for child_tag in tag.children:
+# 				if child_tag in visited_tags:
+# 					continue
+# 				err = _generate(child_tag, super_root, gdml_stack)
+# 				if err != OK:
+# 					push_error("Error occurred while generating resource for tag %s" % tag.to_string())
+
+# 			gdml_stack.pop_back()
+			
+# 			gdml_stack[-1].add_child(gdml) if gdml_stack.size() > 0 else super_root.add_child(gdml)
+# 		Constants.SCRIPT:
+# 			var script_name: String = (
+# 				tag.attributes.get(Constants.SRC) if tag.attributes.has(Constants.SRC) else (
+# 					tag.attributes.get(Constants.NAME) if tag.attributes.has(Constants.NAME) else (
+# 						ScriptHandler.SCRIPT_NAME_TEMPLATE % tag.location
+# 					)
+# 				)
+# 			)
+			
+# 			var script: GDScript = _script_handler.find_script(tag, script_name)
+
+# 			if script == null:
+# 				push_error("Script is not known for tag %s" % tag.to_string())
+# 				return Error.Code.UNKNOWN_SCRIPT
+
+# 			if gdml_stack.size() > 0:
+# 				if not gdml_stack[-1] is ControlRoot:
+# 					if gdml_stack[-1].is_class("Node"):
+# 						gdml_stack[-1].set_script(script)
+# 					else: # References and objects cannot have their script replaced, so just add it as a meta var
+# 						gdml_stack[-1].set_meta(script_name, script.new())
+# 				else:
+# 					gdml_stack[0].add_instance(script, _create_instance_descriptor(tag))
+# 			else:
+# 				super_root.add_instance(script, _create_instance_descriptor(tag))
+			
+# 			for tag_child in tag.children:
+# 				_generate(tag_child, super_root, gdml_stack)
+# 		Constants.STYLE:
+# 			# TODO cache themes first like with scripts
+# 			var themes: Dictionary = _style_handler.handle_style(tag)
+# 			if themes.empty():
+# 				return Error.Code.NO_THEMES_PARSED
+			
+# 			# TODO this always uses the default theme
+# 			# TODO refactor to uses smarter stack
+# 			if gdml_stack.size() > 0:
+# 				if gdml_stack[-1].is_class("Control"):
+# 					gdml_stack[-1].theme = themes["default"]
+# 				else:
+# 					gdml_stack[0].theme = themes["default"]
+# 			else:
+# 				super_root.theme = themes["default"]
+			
+# 			for tag_child in tag.children:
+# 				_generate(tag_child, super_root, gdml_stack)
+# 		_:
+# 			var object: Object = _handle_element(tag, super_root, gdml_stack)
+# 			if object == null:
+# 				push_error("Unable to handle element for tag %s" % tag.to_string())
+# 				return Error.Code.HANDLE_ELEMENT_FAILURE
+			
+# 			gdml_stack.append(object)
+			
+# 			for tag_child in tag.children:
+# 				_generate(tag_child, super_root, gdml_stack)
+			
+# 			gdml_stack.pop_back()
+	
+# 	return err
 
 static func _create_instance_descriptor(tag: Tag) -> InstanceDescriptor:
 	var r := InstanceDescriptor.new()
@@ -167,7 +177,7 @@ static func _create_instance_descriptor(tag: Tag) -> InstanceDescriptor:
 func _handle_element(
 	tag: Tag,
 	super_root: ControlRoot,
-	gdml_stack: Array
+	stack: Stack
 ) -> Object:
 	var object: Object
 	var godot_class_name := tag.name.capitalize().replace(" ", "")
@@ -178,18 +188,13 @@ func _handle_element(
 
 	object.set("text", tag.text)
 
-	if object.is_class("Node") and gdml_stack[-1].is_class("Node"):
-		gdml_stack[-1].add_child(object)
-	elif gdml_stack[-1].has_method("add_instance"):
-		gdml_stack[-1].add_instance(object, _create_instance_descriptor(tag))
-	else:
-		gdml_stack[-1].set_meta(tag.name, object)
+	stack.add_child(tag.depth, object, _create_instance_descriptor(tag) if not object.is_class("Node") else null)
 
-	_handle_attributes(tag, object, super_root, gdml_stack)
+	_handle_attributes(tag, object, super_root, stack)
 
 	return object
 
-func _handle_attributes(tag: Tag, object: Object, super_root: ControlRoot, gdml_stack: Array) -> int:
+func _handle_attributes(tag: Tag, object: Object, super_root: ControlRoot, stack: Stack) -> int:
 	for key in tag.attributes.keys():
 		var val = tag.attributes[key]
 		match key:
@@ -212,7 +217,7 @@ func _handle_attributes(tag: Tag, object: Object, super_root: ControlRoot, gdml_
 			Constants.ID:
 				pass
 			_:
-				_handle_connections(key, val, object, super_root, gdml_stack)
+				_handle_connections(key, val, object, super_root, stack)
 	
 	return OK
 
@@ -221,7 +226,7 @@ func _handle_connections(
 	value: String,
 	object: Object,
 	super_root: ControlRoot,
-	gdml_stack: Array
+	stack: Stack
 ) -> int:
 	if not object.has_signal(key) and not object.has_user_signal(key):
 		return Error.Code.NO_SIGNAL_FOUND
@@ -234,19 +239,27 @@ func _handle_connections(
 		var func_arg_split := dot_split[1].split("(", false, 1)
 		value = func_arg_split[0]
 		if func_arg_split.size() == 2:
-			args.append_array(_generate_connect_args(func_arg_split[1], object, super_root, gdml_stack))
+			args.append_array(_generate_connect_args(func_arg_split[1], object, super_root, stack))
 		
 	if object.has_method(value):
 		object.connect(key, object, value, args)
 	else:
 		var err := OK
-		for gdml in gdml_stack:
-			err = gdml.find_and_connect(key, object, value, args)
+		# for gdml in gdml_stack:
+		# 	err = gdml.find_and_connect(key, object, value, args)
+		# 	if err == OK:
+		# 		break
+		
+		# if err != OK:
+		# 	err = super_root.find_and_connect(key, object, value, args)
+
+		var temp_stack := stack
+		while temp_stack != null:
+			err = temp_stack.get_stack_root().find_and_connect(key, object, value, args)
 			if err == OK:
 				break
-		
-		if err != OK:
-			err = super_root.find_and_connect(key, object, value, args)
+
+			temp_stack = temp_stack.get_super_stack()
 		
 		if err != OK:
 			push_error("Unable to connect %s - %s for object %s" % [key, value, str(object)])
@@ -254,7 +267,7 @@ func _handle_connections(
 	
 	return OK
 
-func _generate_connect_args(args_text: String, object: Object, super_root: ControlRoot, gdml_stack: Array) -> Array:
+func _generate_connect_args(args_text: String, object: Object, super_root: ControlRoot, stack: Stack) -> Array:
 	var r := []
 
 	var args := args_text.rstrip(")").replace(" ", "").split(",", false)
@@ -295,7 +308,7 @@ func _handle_cast(arg: String):
 		_:
 			return val
 
-func _handle_nested_arg(query: String, super_root: ControlRoot, gdml_stack: Array):
+func _handle_nested_arg(query: String, super_root: ControlRoot, stack: Stack):
 	var class_split: PoolStringArray = query.split(".", false)
 
 	var instance
@@ -336,19 +349,20 @@ func _handle_nested_arg(query: String, super_root: ControlRoot, gdml_stack: Arra
 # Public functions                                                            #
 ###############################################################################
 
-func generate(p_output: Control, layout: Layout) -> int:
+func generate(output: Control, layout: Layout) -> int:
 	var err := OK
 	
-	_cache_scripts(_script_handler, layout.tags)
-
-	var output: Control = p_output
+	err = _cache_scripts(_script_handler, layout.tags)
+	if err != OK:
+		return err
+	
 	output.set_anchors_preset(Control.PRESET_WIDE)
 	output.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	output.set_script(ControlRoot)
 	output.name = OUTPUT_NAME
 
 	for tag in layout.tags: # Tag
-		var inner_err = _generate(tag, output, [])
+		var inner_err = _generate(output, tag, Stack.new(output))
 		if inner_err != OK:
 			push_error("Error occurred while generating: %s" % Error.to_error_name(err))
 			err = inner_err

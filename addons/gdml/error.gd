@@ -37,6 +37,8 @@ enum Code {
 	
 	HANDLE_ELEMENT_FAILURE,
 	
+	BAD_STACK
+	
 	#endregion
 }
 
