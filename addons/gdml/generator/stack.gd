@@ -53,7 +53,7 @@ func top() -> Object:
 	return _stack[-1]
 
 func add_gdml(depth: int, gdml: Control) -> int:
-	_gdml_locations.append(_stack.size() - 1)
+	_gdml_locations.append(_stack.size())
 	
 	return add_child(depth, gdml)
 
@@ -66,19 +66,15 @@ func add_child(depth: int, object: Object, param = null) -> int:
 		param - Duck-typed value for scripts. Could be an InstanceDescriptor or a String name
 	"""
 	if object.is_class("Node"):
-		if _depth < depth:
-			_add_child(depth, object)
-			push(object)
+		if _depth > depth:
+			while _stack.size() > depth:
+				pop()
 		elif _depth == depth:
 			if pop() == null:
 				return Error.Code.BAD_STACK
-			_add_child(depth, object)
-			push(object)
-		else:
-			while _stack.size() > depth:
-				pop()
-			
-			_add_child(depth, object)
+		
+		_add_child(depth, object)
+		push(object)
 	else:
 		if _stack.size() == 1:
 			return root().add_instance(object, param)
@@ -98,10 +94,15 @@ func find_name_in_stack(node_name: String) -> Object:
 			return i
 	return null
 
-func find_object_for_signal_in_stack(signal_name: String) -> Object:
+func find_object_for_method_in_stack(method_name: String) -> Object:
 	for i in _stack:
-		if i.has_signal(signal_name) or i.has_user_signal(signal_name):
+		if i.has_method(method_name):
 			return i
+
+	for i in _gdml_locations:
+		var instance: Object = _stack[i].find_instance_for_method(method_name)
+		if instance != null:
+			return instance
 	return null
 
 func find_instance(instance_name: String) -> Object:

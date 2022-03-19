@@ -42,13 +42,6 @@ func _init(context_path: String, registered_scenes: Dictionary) -> void:
 # Private functions                                                           #
 ###############################################################################
 
-static func _cache_scripts(sh: ScriptHandler, tags: Array) -> int:
-	for tag in tags:
-		if tag.name == Constants.SCRIPT or tag.attributes.has(Constants.SRC):
-			sh.handle_script_tag(tag)
-
-	return OK
-
 func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int) -> int:
 	var err := OK
 
@@ -73,20 +66,23 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 				visited_locations.append(script_tag.location)
 				
 				var script_name := _create_script_name_from_tag(script_tag)
-				var script: GDScript = _script_handler.find_script(script_name)
-				if script == null:
-					push_error("Script not found for tag: %s" % script_tag.to_string())
+				var script := GDScript.new()
+				
+				err = _script_handler.handle_tag(script_tag, script_name, script)
+				if err != OK:
+					push_error("Failure when handling script for tag: %s" % tag.to_string())
 					continue
 				
 				gdml.add_instance(script, script_name)
+				gdml.add_temp_instance(script, script_name)
 
 			stack.add_gdml(tag.depth, gdml)
 		Constants.SCRIPT:
 			var script_name := _create_script_name_from_tag(tag)
-			var script: GDScript = _script_handler.find_script(script_name)
-			if script == null:
-				push_error("Script not found for tag: %s" % tag.to_string())
-				continue
+			var script := GDScript.new()
+			err = _script_handler.handle_tag(tag, script_name, script)
+			if err != OK:
+				push_error("Failure when handling script for tag: %s" % tag.to_string())
 
 			var stack_top: Object = stack.top()
 			if stack_top is ControlRoot:
@@ -94,7 +90,6 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 			else:
 				stack_top.set_script(script)
 		Constants.STYLE:
-			# TODO cache themes first like with scripts
 			var themes: Dictionary = _style_handler.handle_style(tag)
 			if themes.empty():
 				push_warning("No themes parsed for tag %s" % tag.to_string())
@@ -119,15 +114,14 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 
 static func _create_script_name_from_tag(tag: Tag) -> String:
 	var script_name := ""
-	if tag.attributes.has(Constants.SRC):
-		script_name = tag.attributes[Constants.SRC]
-	elif tag.attributes.has(Constants.NAME):
+	if tag.attributes.has(Constants.NAME):
 		script_name = tag.attributes[Constants.NAME]
+	elif tag.attributes.has(Constants.SRC):
+		script_name = tag.attributes[Constants.SRC]
 	else:
 		script_name = Constants.SCRIPT_NAME_TEMPLATE % tag.location
 
 	return script_name
-
 
 func _handle_element(
 	tag: Tag,
@@ -139,12 +133,15 @@ func _handle_element(
 		object = ClassDB.instance(godot_class_name)
 	elif _registered_scenes.has(tag.name):
 		object = _registered_scenes[tag.name].instance()
+	else:
+		push_error("Unknown tag or scene %s" % tag.name)
+		return null
 
 	object.set("text", tag.text)
 
 	var err: int = _handle_attributes(tag, object, stack)
 	if err != OK:
-		push_error("Error occurred while handling connections: %s" % Error.to_error_name(err))
+		push_error("Error occurred while handling attributes: %s" % Error.to_error_name(err))
 
 	return object
 
@@ -153,31 +150,51 @@ func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
 	
 	for key in tag.attributes.keys():
 		var val = tag.attributes[key]
+#		if key == Constants.NAME:
+#			object.set(Constants.NAME, val)
+#		elif key == Constants.SRC:
+#			var script_name := _create_script_name_from_tag(tag)
+#			var script := GDScript.new()
+#
+#			var inner_err: int = _script_handler.handle_tag(tag, script_name, script)
+#			if inner_err != OK:
+#				err = inner_err
+#				continue
+#
+#			object.set_script(script)
 		match key:
-			Constants.NAME:
+			"name":
 				object.set(Constants.NAME, val)
-			Constants.SRC:
-				var script: GDScript = _script_handler.find_script(val.get_basename() if val.is_rel_path() else val)
-				if script == null:
-					push_warning("No script found for tag %s - %s" % [tag.to_string(), val])
+			"src":
+				var script_name := _create_script_name_from_tag(tag)
+				var script := GDScript.new()
+
+				var inner_err: int = _script_handler.handle_tag(tag, script_name, script)
+				if inner_err != OK:
+					err = inner_err
 					continue
 
 				object.set_script(script)
-			Constants.STYLE:
+			"style":
 				if not object.is_class("Control"):
 					push_warning("Tried to set style on a non-Control element: %s - %s" % [key, val])
 					continue
 				_style_handler.handle_inline_style(object, val)
-			Constants.CLASS:
-				pass
-			Constants.ID:
-				pass
+			"class":
+				print_debug("Not yet implemented")
+			"id":
+				print_debug("Not yet implemented")
 			_:
+				if key == "src":
+					print("ree")
 				var inner_err: int = _handle_connections(key, val, object, stack)
 				if inner_err != OK:
+					push_error("Error occurred while handling connection - callback: %s - %s" %
+						[key, val])
 					err = inner_err
+					continue
 	
-	return OK
+	return err
 
 func _handle_connections(
 	signal_name: String,
@@ -187,6 +204,8 @@ func _handle_connections(
 ) -> int:
 	if not object.has_signal(signal_name) and not object.has_user_signal(signal_name):
 		return Error.Code.NO_SIGNAL_FOUND
+	if object.is_connected(signal_name, object, callback):
+		return Error.Code.SIGNAL_ALREADY_CONNECTED
 	
 	var args := []
 
@@ -200,14 +219,15 @@ func _handle_connections(
 		
 	if object.has_method(callback):
 		return object.connect(signal_name, object, callback, args)
-	else:
-		var stack_instance: Object = stack.find_object_for_signal_in_stack(signal_name)
-		if stack_instance == null:
-			return Error.Code.MISSING_ON_STACK
-		if stack_instance.is_connected(signal_name, object, callback):
-			return Error.Code.SIGNAL_ALREADY_CONNECTED
-		
-		return stack_instance.connect(signal_name, object, callback, args)
+	
+	# var stack_instance: Object = stack.find_object_for_signal_in_stack(signal_name)
+	var stack_instance: Object = stack.find_object_for_method_in_stack(callback)
+	if stack_instance == null:
+		return Error.Code.MISSING_ON_STACK
+	# if stack_instance.is_connected(signal_name, object, callback):
+	# 	return Error.Code.SIGNAL_ALREADY_CONNECTED
+	
+	return object.connect(signal_name, stack_instance, callback, args)
 
 func _generate_connect_args(args_text: String, object: Object, stack: Stack) -> Array:
 	var r := []
@@ -284,9 +304,9 @@ func _handle_nested_arg(query: String, stack: Stack):
 func generate(output: Control, layout: Layout) -> int:
 	var err := OK
 	
-	err = _cache_scripts(_script_handler, layout.tags)
-	if err != OK:
-		return err
+	# err = _cache_scripts(_script_handler, layout.tags)
+	# if err != OK:
+	# 	return err
 	
 	output.set_anchors_preset(Control.PRESET_WIDE)
 	output.mouse_filter = Control.MOUSE_FILTER_IGNORE

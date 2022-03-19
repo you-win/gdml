@@ -36,8 +36,16 @@ enum Code {
 	HANDLE_ELEMENT_FAILURE,
 	
 	BAD_STACK,
-	MISSING_ON_STACK
+	MISSING_ON_STACK,
 	
+	#endregion
+
+	#region ControlRoot
+
+	INVALID_INSTANCE,
+	ALREADY_CONNECTED,
+	NO_VALID_CALLBACK
+
 	#endregion
 }
 
