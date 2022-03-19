@@ -21,7 +21,7 @@ func _init():
     <script name="button_script">
 extends Button
 
-
+var test_var_button: int = 1
     </script>
     <style>
 Button {

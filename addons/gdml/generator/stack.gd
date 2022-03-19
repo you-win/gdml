@@ -53,9 +53,9 @@ func top() -> Object:
 	return _stack[-1]
 
 func add_gdml(depth: int, gdml: Control) -> int:
-	_gdml_locations.append(_stack.size())
+#	_gdml_locations.append(_stack.size() if depth < _depth else _stack.size() - 1)
 	
-	return add_child(depth, gdml)
+	return add_child(depth, gdml, true)
 
 func add_child(depth: int, object: Object, param = null) -> int:
 	"""
@@ -75,6 +75,9 @@ func add_child(depth: int, object: Object, param = null) -> int:
 		
 		_add_child(depth, object)
 		push(object)
+		
+		if typeof(param) == TYPE_BOOL and param == true:
+			_gdml_locations.append(_stack.size() - 1)
 	else:
 		if _stack.size() == 1:
 			return root().add_instance(object, param)
@@ -99,16 +102,32 @@ func find_object_for_method_in_stack(method_name: String) -> Object:
 		if i.has_method(method_name):
 			return i
 
-	for i in _gdml_locations:
-		var instance: Object = _stack[i].find_instance_for_method(method_name)
+	for i in get_gdml_nodes():
+		var instance: Object = i.find_instance_for_method(method_name)
 		if instance != null:
 			return instance
 	return null
 
 func find_instance(instance_name: String) -> Object:
-	for i in _gdml_locations:
-		var instance = _stack[i].find_instance(instance_name)
+	for i in get_gdml_nodes():
+		var instance: Object = i.find_instance(instance_name)
 		if instance != null:
 			return instance
 
 	return null
+
+func find_temp_instance(instance_name: String) -> Object:
+	for i in get_gdml_nodes():
+		var instance: Object = i.find_temp_instance(instance_name)
+		if instance != null:
+			return instance
+
+	return null
+
+func get_gdml_nodes() -> Array:
+	var r := []
+
+	for i in _gdml_locations:
+		r.append(_stack[i])
+
+	return r

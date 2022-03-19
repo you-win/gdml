@@ -150,49 +150,57 @@ func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
 	
 	for key in tag.attributes.keys():
 		var val = tag.attributes[key]
-#		if key == Constants.NAME:
-#			object.set(Constants.NAME, val)
-#		elif key == Constants.SRC:
-#			var script_name := _create_script_name_from_tag(tag)
-#			var script := GDScript.new()
-#
-#			var inner_err: int = _script_handler.handle_tag(tag, script_name, script)
-#			if inner_err != OK:
-#				err = inner_err
-#				continue
-#
-#			object.set_script(script)
 		match key:
-			"name":
+			Constants.NAME:
 				object.set(Constants.NAME, val)
-			"src":
+			Constants.SRC:
+				# Try three different methods of finding the src script
+				# 1. Find a temp instance of the script on the stack
+				# 2. Find a persistent instance of the script on the stack
+				# 3. Try to load the script from the context_path + src
 				var script_name := _create_script_name_from_tag(tag)
 				var script := GDScript.new()
 
-				var inner_err: int = _script_handler.handle_tag(tag, script_name, script)
-				if inner_err != OK:
-					err = inner_err
-					continue
+				var instance: Object = stack.find_temp_instance(script_name)
+				if instance != null:
+					if instance.is_class("GDScript"):
+						object.set_script(instance)
+						break
+					else:
+						script = object.get_script()
+						if script != null:
+							object.set_script(script.duplicate())
+							break
 
-				object.set_script(script)
-			"style":
+				instance = stack.find_instance(script_name)
+				if instance != null:
+					if instance.is_class("GDScript"):
+						object.set_script(instance)
+						break
+					else:
+						script = object.get_script()
+						if script != null:
+							object.set_script(script.duplicate())
+							break
+
+				var inner_err: int = _script_handler.handle_tag(tag, script_name, script)
+				if inner_err == OK:
+					object.set_script(script)
+					break
+				
+				err = inner_err
+			Constants.STYLE:
 				if not object.is_class("Control"):
 					push_warning("Tried to set style on a non-Control element: %s - %s" % [key, val])
-					continue
+					break
 				_style_handler.handle_inline_style(object, val)
-			"class":
-				print_debug("Not yet implemented")
-			"id":
-				print_debug("Not yet implemented")
 			_:
-				if key == "src":
-					print("ree")
 				var inner_err: int = _handle_connections(key, val, object, stack)
 				if inner_err != OK:
 					push_error("Error occurred while handling connection - callback: %s - %s" %
 						[key, val])
 					err = inner_err
-					continue
+					break
 	
 	return err
 

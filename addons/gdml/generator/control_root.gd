@@ -67,7 +67,10 @@ func add_temp_instance(thing, instance_name: String) -> int:
 	return OK
 
 func find_instance(instance_name: String) -> Object:
-	return instances.get(instance_name, temp_instances.get(instance_name))
+	return instances.get(instance_name)
+	
+func find_temp_instance(instance_name: String) -> Object:
+	return temp_instances.get(instance_name)
 
 func find_variable(instance_name: String, thing: String):
 	var instance = instances.get(instance_name, temp_instances.get(instance_name))
