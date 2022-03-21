@@ -214,6 +214,9 @@ func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
 				object.set("name", val)
 			Constants.STYLE, Constants.PROPS:
 				_style_handler.handle_inline_style(object, val)
+			Constants.SRC, Constants.SOURCE:
+				# Already handled
+				pass
 			_:
 				var inner_err: int = _handle_connections(key, val, object, stack)
 				if inner_err != OK:
