@@ -1,17 +1,22 @@
-<node name="OuterNode">
-<node name="InnerNode">
-</node>
-</node>
 <script>
 extends Node2D
 
 func _ready():
     Physics2DServer.area_set_param(get_world_2d().space, Physics2DServer.AREA_PARAM_GRAVITY_VECTOR, Vector2.ZERO)
+    queue_free()
 </script>
-<gdml>
-    <camera_2_d props="current: (bool)true"/>
-    <kinematic_body_2_d name="LeftPaddle" props="position:x: (int)-200">
-        <script>
+
+<canvas_layer>
+    <gdml style="anchor_left: 0.4; anchor_right: 0.6; anchor_bottom: 0.9;margin_top: 10">
+        <label style="align: (int) 1">
+            hello
+        </label>
+    </gdml>
+</canvas_layer>
+
+<camera_2_d props="current: (bool)true"/>
+<kinematic_body_2_d name="LeftPaddle" props="position:x: (int)-200">
+    <script>
 extends KinematicBody2D
 
 var test_var = 1
@@ -40,10 +45,10 @@ func _physics_process(delta):
     if Input.is_key_pressed(KEY_S):
         position.y += 10
 
-        </script>
-    </kinematic_body_2_d>
-    <kinematic_body_2_d name="RightPaddle" props="position:x: (int) 200">
-        <script>
+    </script>
+</kinematic_body_2_d>
+<kinematic_body_2_d name="RightPaddle" props="position:x: (int) 200">
+    <script>
 extends KinematicBody2D
 
 func _ready():
@@ -69,10 +74,10 @@ func _physics_process(delta):
     if Input.is_key_pressed(KEY_DOWN):
         position.y += 10
 
-        </script>
-    </kinematic_body_2_d>
-    <rigid_body_2_d name="Ball">
-        <script>
+    </script>
+</kinematic_body_2_d>
+<rigid_body_2_d name="Ball">
+    <script>
 extends RigidBody2D
 
 func _ready():
@@ -98,6 +103,6 @@ func _ready():
 
     apply_central_impulse(Vector2(-200, 0))
 
-        </script>
-    </rigid_body_2_d>
-</gdml>
+    </script>
+</rigid_body_2_d>
+

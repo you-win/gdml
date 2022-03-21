@@ -1,6 +1,7 @@
 extends XMLParser
 
 const Error = preload("res://addons/gdml/error.gd")
+const Constants = preload("res://addons/gdml/constants.gd")
 
 const NodeData = preload("res://addons/gdml/parser/node_data.gd")
 
@@ -37,7 +38,7 @@ func read_node() -> NodeData:
 				for i in get_attribute_count():
 					nd.attributes[get_attribute_name(i)] = get_attribute_value(i)
 			XMLParser.NODE_TEXT:
-				nd.text += get_node_data()
+				nd.text += get_node_data() if nd.node_name == Constants.SCRIPT else get_node_data().strip_edges()
 				if OS.get_name().to_lower() == "linux":
 					nd.text = nd.text.replace("\r", "")
 				is_finished = true
@@ -56,7 +57,5 @@ func read_node() -> NodeData:
 		if read() != OK:
 			is_finished = true
 			nd.is_complete = true
-
-	# print("%s - is_open %s" % [nd.node_name, str(nd.is_open)])
 	
 	return nd
