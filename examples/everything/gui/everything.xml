@@ -112,7 +112,7 @@ func _other_pressed():
     print("other")
 
     </gdml_script>
-</gdml_script>
+</gdml>
 
 <gdml>
     <button

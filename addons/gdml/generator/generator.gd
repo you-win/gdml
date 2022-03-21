@@ -1,7 +1,6 @@
 extends Reference
 
 const OUTPUT_NAME := "GDML"
-const TEXT_CONTROLS := ["Label", "Button", "LineEdit", "TextEdit"]
 
 const ScriptHandler = preload("res://addons/gdml/generator/handlers/script_handler.gd")
 const StyleHandler = preload("res://addons/gdml/generator/handlers/style_handler.gd")
@@ -91,11 +90,6 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 				push_error("Failure when handling script for tag: %s" % tag.to_string())
 
 			stack.add_child(tag.depth, script, script_name)
-#			var stack_top: Object = stack.top()
-#			if stack_top is ControlRoot:
-#				stack_top.add_instance(script, script_name)
-#			else:
-#				stack_top.set_script(script)
 		Constants.STYLE:
 			var themes: Dictionary = _style_handler.handle_style(tag)
 			if themes.empty():
@@ -135,6 +129,8 @@ static func _create_script_name_from_tag(tag: Tag) -> String:
 		script_name = tag.attributes[Constants.NAME]
 	elif tag.attributes.has(Constants.SRC):
 		script_name = tag.attributes[Constants.SRC]
+	elif tag.attributes.has(Constants.SOURCE):
+		script_name = tag.attributes[Constants.SOURCE]
 	else:
 		script_name = Constants.SCRIPT_NAME_TEMPLATE % tag.location
 
@@ -205,16 +201,17 @@ func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
 	var err := OK
 
 	# Always process the src first
-	if tag.attributes.has(Constants.SRC):
+	if tag.attributes.has(Constants.SRC) or tag.attributes.has(Constants.SOURCE):
 		err = _handle_src_attribute(tag, object, stack)
 		if err != OK:
-			push_error("Error occurred while handling src: %s" % tag.attributes[Constants.SRC])
+			push_error("Error occurred while handling src: %s" %
+				tag.attributes.get(Constants.SRC, tag.attributes.get(Constants.SOURCE)))
 	
 	for key in tag.attributes.keys():
 		var val = tag.attributes[key]
 		match key:
 			Constants.NAME:
-				object.set(Constants.NAME, val)
+				object.set("name", val)
 			Constants.STYLE, Constants.PROPS:
 				_style_handler.handle_inline_style(object, val)
 			_:
@@ -293,8 +290,6 @@ func _handle_connections(
 	var stack_instance: Object = stack.find_object_for_method_in_stack(callback)
 	if stack_instance == null:
 		return Error.Code.MISSING_ON_STACK
-	# if stack_instance.is_connected(signal_name, object, callback):
-	# 	return Error.Code.SIGNAL_ALREADY_CONNECTED
 	
 	return object.connect(signal_name, stack_instance, callback, args)
 

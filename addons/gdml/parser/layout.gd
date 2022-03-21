@@ -23,7 +23,7 @@ class Hoister:
 		gdml_depth = p_gdml_depth
 
 	func apply(ref_dict: Dictionary) -> void:
-		ref_dict[gdml_location] = scripts.duplicate()
+		ref_dict[gdml_location] = scripts.duplicate(true)
 
 var gdml_script_tags := {} # GDML location: int -> Script tags: Array[int]
 var _hoist_stack := [] # Hoister

@@ -49,21 +49,23 @@ func _process_nodes(reader: Reader) -> Array:
 		if data.is_complete:
 			break
 		
-		if data.node_name.empty() and not data.text.empty():
-			# We ran into a comment someone, so just add the text body to the previous tag
-			var node_name := ""
-			var counter: int = -1
-			while abs(counter) < node_stack.size():
-				var previous_data: NodeData = node_stack[counter]
-				if previous_data.is_open and node_name.empty():
-					previous_data.text += data.text
-					break
-				elif not previous_data.is_open:
-					node_name = previous_data.node_name
-				elif previous_data.is_open and previous_data.node_name == node_name:
-					node_name = ""
-				counter -= 1
-			# node_stack[-1].text += data.text
+		if data.node_name.empty():
+			if not data.text.empty():
+				# We ran into a comment, so just add the text body to the previous tag
+				var node_name := ""
+				var counter: int = -1
+				while abs(counter) < node_stack.size():
+					var previous_data: NodeData = node_stack[counter]
+					if previous_data.is_open and node_name.empty():
+						previous_data.text += data.text
+						break
+					elif not previous_data.is_open:
+						node_name = previous_data.node_name
+					elif previous_data.is_open and previous_data.node_name == node_name:
+						node_name = ""
+					# Count backwords through the node stack
+					counter -= 1
+			# Always skip to the next tag since there's no way to process an empty tag anyways
 			continue
 
 		node_location += 1

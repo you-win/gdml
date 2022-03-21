@@ -21,6 +21,7 @@ const GROUP := "gdml_group"
 const NAME := "gdml_name"
 # const STYLE := "style" # We already have a style attribute :D
 const SRC := "gdml_src"
+const SOURCE := "gdml_source"
 const PROPS := "gdml_props"
 
 # Whether to attach a script the the parent tag or not
