@@ -34,7 +34,7 @@ func handle_style(data) -> Dictionary:
 
 	return css_processor.output
 
-func handle_inline_style(node: Control, raw_style: String) -> void:
+func handle_inline_style(node: Object, raw_style: String) -> void:
 	raw_style = raw_style.replace(" ", "").strip_escapes()
 	var styles := raw_style.split(";", false)
 
@@ -50,7 +50,7 @@ func handle_inline_style(node: Control, raw_style: String) -> void:
 
 		match key:
 			"anchor":
-				if val == "full_rect":
+				if val == "full_rect" and node.is_class("Control"):
 					node.set_anchors_preset(Control.PRESET_WIDE)
 				else:
 					for i in CONTROL_DIRECTIONS:
@@ -65,8 +65,10 @@ func handle_inline_style(node: Control, raw_style: String) -> void:
 					match split_val[0].replace(" ", "").lstrip("("):
 						"float":
 							node.set_indexed(key, float(val))
-						"int":
+						"int", "integer":
 							node.set_indexed(key, int(val))
+						"bool", "boolean":
+							node.set_indexed(key, bool(val))
 						"string":
 							node.set_indexed(key, val)
 						"color":

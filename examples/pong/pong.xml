@@ -1,0 +1,85 @@
+<gdml>
+    <camera_2_d props="current: (bool)true"/>
+    <kinematic_body_2_d name="LeftPaddle">
+        <script>
+extends KinematicBody2D
+
+var test_var = 1
+
+func _ready():
+    position = Vector2(-200, 0)
+
+    var cs = CollisionShape2D.new()
+    var rect = RectangleShape2D.new()
+    cs.shape = rect
+    add_child(cs)
+
+    var sprite = Sprite.new()
+    var image = Image.new()
+    image.load("res://icon.png")
+    var image_texture = ImageTexture.new()
+    image_texture.create_from_image(image)
+    sprite.texture = image_texture
+    add_child(sprite)
+
+    scale.y = 3
+
+func _physics_process(delta):
+    if Input.is_key_pressed(KEY_W):
+        position.y -= 10
+    if Input.is_key_pressed(KEY_S):
+        position.y += 10
+
+        </script>
+    </kinematic_body_2_d>
+    <kinematic_body_2_d name="RightPaddle">
+        <script>
+extends KinematicBody2D
+
+func _ready():
+    position = Vector2(200, 0)
+
+    var cs = CollisionShape2D.new()
+    var rect = RectangleShape2D.new()
+    cs.shape = rect
+    add_child(cs)
+
+    var sprite = Sprite.new()
+    var image = Image.new()
+    image.load("res://icon.png")
+    var image_texture = ImageTexture.new()
+    image_texture.create_from_image(image)
+    sprite.texture = image_texture
+    add_child(sprite)
+
+    scale.y = 3
+
+func _physics_process(delta):
+    if Input.is_key_pressed(KEY_UP):
+        position.y -= 10
+    if Input.is_key_pressed(KEY_DOWN):
+        position.y += 10
+
+        </script>
+    </kinematic_body_2_d>
+    <rigid_body_2_d name="Ball">
+        <script>
+extends RigidBody2D
+
+func _ready():
+    var cs = CollisionShape2D.new()
+    var rect = RectangleShape2D.new()
+    cs.shape = rect
+    add_child(cs)
+
+    var sprite = Sprite.new()
+    var image = Image.new()
+    image.load("res://icon.png")
+    var image_texture = ImageTexture.new()
+    image_texture.create_from_image(image)
+    sprite.texture = image_texture
+    add_child(sprite)
+
+        </script>
+    </rigid_body_2_d>
+</gdml>

@@ -35,7 +35,7 @@ func read_node() -> NodeData:
 				for i in get_attribute_count():
 					nd.attributes[get_attribute_name(i)] = get_attribute_value(i)
 			XMLParser.NODE_TEXT:
-				nd.text = get_node_data().strip_edges()
+				nd.text += get_node_data()
 				if OS.get_name().to_lower() == "linux":
 					nd.text = nd.text.replace("\r", "")
 				is_finished = true
@@ -43,6 +43,9 @@ func read_node() -> NodeData:
 				nd.node_name = get_node_name()
 				nd.is_open = false
 				is_finished = true
+			XMLParser.NODE_COMMENT:
+				# Intentionally do nothing
+				pass
 			_:
 				is_finished = true
 		

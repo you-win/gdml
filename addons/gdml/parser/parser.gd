@@ -49,7 +49,9 @@ func _process_nodes(reader: Reader) -> Array:
 		if data.is_complete:
 			break
 		
-		if data.node_name.empty():
+		if data.node_name.empty() and not data.text.empty():
+			node_stack[-1].text += data.text
+			print(node_stack[-1].text)
 			continue
 
 		node_location += 1

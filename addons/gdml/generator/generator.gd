@@ -189,10 +189,7 @@ func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
 					break
 				
 				err = inner_err
-			Constants.STYLE:
-				if not object.is_class("Control"):
-					push_warning("Tried to set style on a non-Control element: %s - %s" % [key, val])
-					break
+			Constants.STYLE, Constants.PROPS:
 				_style_handler.handle_inline_style(object, val)
 			_:
 				var inner_err: int = _handle_connections(key, val, object, stack)
@@ -311,10 +308,6 @@ func _handle_nested_arg(query: String, stack: Stack):
 
 func generate(output: Control, layout: Layout) -> int:
 	var err := OK
-	
-	# err = _cache_scripts(_script_handler, layout.tags)
-	# if err != OK:
-	# 	return err
 	
 	output.set_anchors_preset(Control.PRESET_WIDE)
 	output.mouse_filter = Control.MOUSE_FILTER_IGNORE

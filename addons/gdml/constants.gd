@@ -21,6 +21,7 @@ const GROUP := "group"
 const NAME := "name"
 # const STYLE := "style" # We already have a style attribute :D
 const SRC := "src"
+const PROPS := "props"
 
 # Whether to attach a script the the parent tag or not
 # Assumed to be true by default
