@@ -78,6 +78,7 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 					push_error("Failure when handling script for tag: %s" % tag.to_string())
 					continue
 				
+				# TODO refactor in stack as well
 				gdml.add_instance(script, script_name)
 				gdml.add_temp_instance(script, script_name)
 
@@ -125,13 +126,29 @@ static func _create_script_name_from_tag(tag: Tag) -> String:
 		String - The script name
 	"""
 	var script_name := ""
-	if tag.attributes.has(Constants.NAME):
-		script_name = tag.attributes[Constants.NAME]
-	elif tag.attributes.has(Constants.SRC):
-		script_name = tag.attributes[Constants.SRC]
-	elif tag.attributes.has(Constants.SOURCE):
-		script_name = tag.attributes[Constants.SOURCE]
+#	if tag.attributes.has(Constants.NAME):
+#		script_name = tag.attributes[Constants.NAME]
+#	elif tag.attributes.has(Constants.SRC):
+#		script_name = tag.attributes[Constants.SRC]
+#	elif tag.attributes.has(Constants.SOURCE):
+#		script_name = tag.attributes[Constants.SOURCE]
+#	else:
+#		script_name = Constants.SCRIPT_NAME_TEMPLATE % tag.location
+	
+	if tag.name == Constants.SCRIPT:
+		if tag.attributes.has(Constants.NAME):
+			script_name = tag.attributes[Constants.NAME]
+		elif tag.attributes.has(Constants.SRC):
+			script_name = tag.attributes[Constants.SRC]
+		elif tag.attributes.has(Constants.SOURCE):
+			script_name = tag.attributes[Constants.SOURCE]
 	else:
+		if tag.attributes.has(Constants.SRC):
+			script_name = tag.attributes[Constants.SRC]
+		elif tag.attributes.has(Constants.SOURCE):
+			script_name = tag.attributes[Constants.SOURCE]
+	
+	if script_name.empty():
 		script_name = Constants.SCRIPT_NAME_TEMPLATE % tag.location
 
 	return script_name
@@ -204,8 +221,11 @@ func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
 	if tag.attributes.has(Constants.SRC) or tag.attributes.has(Constants.SOURCE):
 		err = _handle_src_attribute(tag, object, stack)
 		if err != OK:
-			push_error("Error occurred while handling src: %s" %
-				tag.attributes.get(Constants.SRC, tag.attributes.get(Constants.SOURCE)))
+			push_error("Error %s occurred while handling src: %s" %
+				[
+					Error.to_error_name(err),
+					tag.attributes.get(Constants.SRC, tag.attributes.get(Constants.SOURCE))
+				])
 	
 	for key in tag.attributes.keys():
 		var val = tag.attributes[key]

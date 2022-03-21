@@ -5,7 +5,62 @@ func _ready():
     Physics2DServer.area_set_param(get_world_2d().space, Physics2DServer.AREA_PARAM_GRAVITY_VECTOR, Vector2.ZERO)
     queue_free()
 </gdml_script>
+<gdml_script gdml_name="Paddle">
+extends Area2D
 
+const Side := {
+    "NONE": "none",
+    "LEFT": "left",
+    "RIGHT": "right"
+}
+
+var side: String = Side.NONE
+
+var up: int
+var down: int
+
+func _ready():
+    var cs = CollisionShape2D.new()
+    var rect = RectangleShape2D.new()
+    rect.extents = Vector2(32, 32)
+    cs.shape = rect
+    add_child(cs)
+
+    var sprite = Sprite.new()
+    var image = Image.new()
+    <!-- TODO make this portable aka not a res path -->
+    image.load("res://icon.png")
+    var image_texture = ImageTexture.new()
+    image_texture.create_from_image(image)
+    sprite.texture = image_texture
+    add_child(sprite)
+
+    scale.y = 3
+    match side:
+        Side.LEFT:
+            up = KEY_W
+            down = KEY_S
+        Side.RIGHT:
+            up = KEY_UP
+            down = KEY_DOWN
+        _:
+            push_error("No side set")
+
+    connect("body_entered", self, "_on_body_entered")
+
+func _physics_process(delta):
+    if Input.is_key_pressed(up):
+        position.y -= 10
+    if Input.is_key_pressed(down):
+        position.y += 10
+
+func _on_body_entered(body):
+    if body.name != "Ball":
+        return
+    body.linear_velocity = Vector2.ZERO
+    body.apply_central_impulse(Vector2(rand_range(300, 150) * (-1 if side == Side.RIGHT else 1), rand_range(-300, 300)))
+
+</gdml_script>
 <canvas_layer>
     <gdml gdml_style="anchor_left: 0.4; anchor_right: 0.6; anchor_bottom: 0.9;margin_top: 10;size_flags_horizontal: (int) 3; size_flags_vertical: (int) 3;">
         <label gdml_style="align: (int) 1" gdml_name="ScoreDisplay">
@@ -28,83 +83,9 @@ func _on_vis_exit() -> void:
     </gdml>
 </canvas_layer>
 
-<camera_2D gdml_props="current: (bool)true"/>
-<area_2d gdml_name="LeftPaddle" gdml_props="position:x: (int)-200">
-    <gdml_script>
-extends Area2D
-
-var test_var = 1
-
-func _ready():
-    var cs = CollisionShape2D.new()
-    var rect = RectangleShape2D.new()
-    rect.extents = Vector2(32, 32)
-    cs.shape = rect
-    add_child(cs)
-
-    var sprite = Sprite.new()
-    var image = Image.new()
-    <!-- TODO make this portable aka not a res path -->
-    image.load("res://icon.png")
-    var image_texture = ImageTexture.new()
-    image_texture.create_from_image(image)
-    sprite.texture = image_texture
-    add_child(sprite)
-
-    scale.y = 3
-
-    connect("body_entered", self, "_on_body_entered")
-
-func _physics_process(delta):
-    if Input.is_key_pressed(KEY_W):
-        position.y -= 10
-    if Input.is_key_pressed(KEY_S):
-        position.y += 10
-
-func _on_body_entered(body):
-    if body.name != "Ball":
-        return
-    body.linear_velocity = Vector2.ZERO
-    body.apply_central_impulse(Vector2(rand_range(300, 150), rand_range(-300, 300)))
-
-    </gdml_script>
-</area_2d>
-<area_2d gdml_name="RightPaddle" gdml_props="position:x: (int) 200">
-    <gdml_script>
-extends Area2D
-
-func _ready():
-    var cs = CollisionShape2D.new()
-    var rect = RectangleShape2D.new()
-    rect.extents = Vector2(32, 32)
-    cs.shape = rect
-    add_child(cs)
-
-    var sprite = Sprite.new()
-    var image = Image.new()
-    image.load("res://icon.png")
-    var image_texture = ImageTexture.new()
-    image_texture.create_from_image(image)
-    sprite.texture = image_texture
-    add_child(sprite)
-
-    scale.y = 3
-
-    connect("body_entered", self, "_on_body_entered")
-
-func _physics_process(delta):
-    if Input.is_key_pressed(KEY_UP):
-        position.y -= 10
-    if Input.is_key_pressed(KEY_DOWN):
-        position.y += 10
-
-func _on_body_entered(body):
-    if body.name != "Ball":
-        return
-    body.linear_velocity = Vector2.ZERO
-    body.apply_central_impulse(Vector2(rand_range(-300, -150), rand_range(-100, 100)))
-
-    </gdml_script>
+<camera_2D gdml_props="current: true"/>
+<area_2d gdml_name="LeftPaddle" gdml_props="position:x: -200; side: left" gdml_src="Paddle"/>
+<area_2d gdml_name="RightPaddle" gdml_props="position:x:  200; side: right" gdml_source="Paddle">
 </area_2d>
 <rigid_body_2D gdml_name="Ball">
     <visibility_notifier_2D gdml_name="BallVis"/>

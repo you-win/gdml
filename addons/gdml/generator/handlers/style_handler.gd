@@ -76,4 +76,21 @@ func handle_inline_style(node: Object, raw_style: String) -> void:
 						"colorN", "ColorN":
 							node.set_indexed(key, ColorN(val))
 				else:
-					node.set_indexed(key, float(val))
+					# Try and figure out the type
+					var node_var = node.get_indexed(key)
+					if node_var == null:
+						push_error("Key %s does not exist for style %s" % [key, raw_style])
+						continue
+					match typeof(node_var):
+						TYPE_REAL:
+							node.set_indexed(key, float(val))
+						TYPE_INT:
+							node.set_indexed(key, int(val))
+						TYPE_BOOL:
+							node.set_indexed(key, bool(val))
+						TYPE_STRING:
+							node.set_indexed(key, val)
+						_:
+							push_error("Unsupported variable type for key - val: %s - %s" % [
+								key, val
+							])

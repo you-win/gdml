@@ -79,6 +79,8 @@ func add_child(depth: int, object: Object, param = null) -> int:
 			_gdml_locations.append(_stack.size() - 1)
 	else:
 		if _stack.size() == 1:
+			# TODO refactor in generator as well
+			root().add_temp_instance(object, param)
 			return root().add_instance(object, param)
 		else:
 			var stack_top: Object = top()
@@ -87,6 +89,8 @@ func add_child(depth: int, object: Object, param = null) -> int:
 				if not stack_top is ControlRoot:
 					stack_top.set_script(object)
 				else:
+					# TODO refactor in generator as well
+					stack_top.add_temp_instance(object, param)
 					stack_top.add_instance(object, param)
 			else:
 				stack_top.set_meta(param, object)
