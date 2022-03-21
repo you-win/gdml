@@ -50,8 +50,8 @@ func _process_nodes(reader: Reader) -> Array:
 			break
 		
 		if data.node_name.empty() and not data.text.empty():
+			# We ran into a comment someone, so just add the text body to the previous tag
 			node_stack[-1].text += data.text
-			print(node_stack[-1].text)
 			continue
 
 		node_location += 1

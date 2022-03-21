@@ -39,7 +39,7 @@ func handle_inline_style(node: Object, raw_style: String) -> void:
 	var styles := raw_style.split(";", false)
 
 	for style in styles:
-		var split_style: PoolStringArray = style.split(":", false)
+		var split_style: PoolStringArray = style.rsplit(":", false, 1)
 
 		if split_style.size() != 2:
 			push_error("Unexpected style attribute %s for %s" % [style, node.name])

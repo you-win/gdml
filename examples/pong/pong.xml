@@ -1,21 +1,31 @@
+<node name="OuterNode">
+<node name="InnerNode">
+</node>
+</node>
+<script>
+extends Node2D
+
+func _ready():
+    Physics2DServer.area_set_param(get_world_2d().space, Physics2DServer.AREA_PARAM_GRAVITY_VECTOR, Vector2.ZERO)
+</script>
 <gdml>
     <camera_2_d props="current: (bool)true"/>
-    <kinematic_body_2_d name="LeftPaddle">
+    <kinematic_body_2_d name="LeftPaddle" props="position:x: (int)-200">
         <script>
 extends KinematicBody2D
 
 var test_var = 1
 
 func _ready():
-    position = Vector2(-200, 0)
-
     var cs = CollisionShape2D.new()
     var rect = RectangleShape2D.new()
+    rect.extents = Vector2(32, 32)
     cs.shape = rect
     add_child(cs)
 
     var sprite = Sprite.new()
     var image = Image.new()
+    <!-- TODO make this portable aka not a res path -->
     image.load("res://icon.png")
     var image_texture = ImageTexture.new()
     image_texture.create_from_image(image)
@@ -32,15 +42,14 @@ func _physics_process(delta):
 
         </script>
     </kinematic_body_2_d>
-    <kinematic_body_2_d name="RightPaddle">
+    <kinematic_body_2_d name="RightPaddle" props="position:x: (int) 200">
         <script>
 extends KinematicBody2D
 
 func _ready():
-    position = Vector2(200, 0)
-
     var cs = CollisionShape2D.new()
     var rect = RectangleShape2D.new()
+    rect.extents = Vector2(32, 32)
     cs.shape = rect
     add_child(cs)
 
@@ -69,8 +78,15 @@ extends RigidBody2D
 func _ready():
     var cs = CollisionShape2D.new()
     var rect = RectangleShape2D.new()
+    rect.extents = Vector2(32, 32)
     cs.shape = rect
     add_child(cs)
+
+    var pm = PhysicsMaterial.new()
+    pm.friction = 0.0
+    pm.bounce = 1.0
+
+    physics_material_override = pm
 
     var sprite = Sprite.new()
     var image = Image.new()
@@ -79,6 +95,8 @@ func _ready():
     image_texture.create_from_image(image)
     sprite.texture = image_texture
     add_child(sprite)
+
+    apply_central_impulse(Vector2(-200, 0))
 
         </script>
     </rigid_body_2_d>

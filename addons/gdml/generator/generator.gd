@@ -84,11 +84,12 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 			if err != OK:
 				push_error("Failure when handling script for tag: %s" % tag.to_string())
 
-			var stack_top: Object = stack.top()
-			if stack_top is ControlRoot:
-				stack_top.add_instance(script, script_name)
-			else:
-				stack_top.set_script(script)
+			stack.add_child(tag.depth, script, script_name)
+#			var stack_top: Object = stack.top()
+#			if stack_top is ControlRoot:
+#				stack_top.add_instance(script, script_name)
+#			else:
+#				stack_top.set_script(script)
 		Constants.STYLE:
 			var themes: Dictionary = _style_handler.handle_style(tag)
 			if themes.empty():

@@ -1,6 +1,7 @@
 extends Reference
 
 const Error = preload("res://addons/gdml/error.gd")
+const ControlRoot = preload("res://addons/gdml/generator/control_root.gd")
 
 # Stack containing all objects by depth
 # This means that when the depth increases, objects are added to the stack
@@ -53,8 +54,6 @@ func top() -> Object:
 	return _stack[-1]
 
 func add_gdml(depth: int, gdml: Control) -> int:
-#	_gdml_locations.append(_stack.size() if depth < _depth else _stack.size() - 1)
-	
 	return add_child(depth, gdml, true)
 
 func add_child(depth: int, object: Object, param = null) -> int:
@@ -65,14 +64,14 @@ func add_child(depth: int, object: Object, param = null) -> int:
 		object: Object - The instance to be added
 		param - Duck-typed value for scripts. Could be an InstanceDescriptor or a String name
 	"""
+	if _depth > depth:
+		while _stack.size() > depth:
+			pop()
+	elif _depth == depth:
+		if pop() == null:
+			return Error.Code.BAD_STACK
+	
 	if object.is_class("Node"):
-		if _depth > depth:
-			while _stack.size() > depth:
-				pop()
-		elif _depth == depth:
-			if pop() == null:
-				return Error.Code.BAD_STACK
-		
 		_add_child(depth, object)
 		push(object)
 		
@@ -85,7 +84,10 @@ func add_child(depth: int, object: Object, param = null) -> int:
 			var stack_top: Object = top()
 			
 			if stack_top.is_class("Node"):
-				stack_top.set_script(object)
+				if not stack_top is ControlRoot:
+					stack_top.set_script(object)
+				else:
+					stack_top.add_instance(object, param)
 			else:
 				stack_top.set_meta(param, object)
 	

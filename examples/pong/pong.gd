@@ -1,15 +1,15 @@
 extends Node
 
-var code := ""
+var gdml = load("res://addons/gdml/gdml.gd")
 
 ###############################################################################
 # Builtin functions                                                           #
 ###############################################################################
 
 func _ready() -> void:
-	var gdml = load("res://addons/gdml/gdml.gd").new("res://examples/pong/")
+	var generator = gdml.new("res://examples/pong/")
 	
-	add_child(gdml.generate("pong.xml"))
+	add_child(generator.generate("pong.xml"))
 
 ###############################################################################
 # Connections                                                                 #

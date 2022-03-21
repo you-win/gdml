@@ -30,6 +30,8 @@ func read_node() -> NodeData:
 	while not is_finished:
 		match get_node_type():
 			XMLParser.NODE_ELEMENT:
+				if not nd.node_name.empty():
+					return nd
 				nd.is_open = true
 				nd.node_name = get_node_name()
 				for i in get_attribute_count():
@@ -40,6 +42,8 @@ func read_node() -> NodeData:
 					nd.text = nd.text.replace("\r", "")
 				is_finished = true
 			XMLParser.NODE_ELEMENT_END:
+				if not nd.node_name.empty():
+					return nd
 				nd.node_name = get_node_name()
 				nd.is_open = false
 				is_finished = true
