@@ -1,15 +1,15 @@
-<script>
+<gdml_script>
 extends Node2D
 
 func _ready():
     Physics2DServer.area_set_param(get_world_2d().space, Physics2DServer.AREA_PARAM_GRAVITY_VECTOR, Vector2.ZERO)
     queue_free()
-</script>
+</gdml_script>
 
 <canvas_layer>
-    <gdml style="anchor_left: 0.4; anchor_right: 0.6; anchor_bottom: 0.9;margin_top: 10;size_flags_horizontal: (int) 3; size_flags_vertical: (int) 3;">
-        <label style="align: (int) 1" name="ScoreDisplay">
-            <script>
+    <gdml gdml_style="anchor_left: 0.4; anchor_right: 0.6; anchor_bottom: 0.9;margin_top: 10;size_flags_horizontal: (int) 3; size_flags_vertical: (int) 3;">
+        <label gdml_style="align: (int) 1" gdml_name="ScoreDisplay">
+            <gdml_script>
 extends Label
 
 func _ready():
@@ -22,17 +22,16 @@ func _ready():
 func _on_vis_exit() -> void:
     text = "ball is gone!"
 
-            </script>
+            </gdml_script>
             score placeholder
         </label>
     </gdml>
 </canvas_layer>
 
-<camera_2_d props="current: (bool)true"/>
-<kinematic_body_2_d name="LeftPaddle" props="position:x: (int)-200">
-    <visibility_notifier_2_d name="LeftPaddleVis"/>
-    <script>
-extends KinematicBody2D
+<camera_2D gdml_props="current: (bool)true"/>
+<area_2d gdml_name="LeftPaddle" gdml_props="position:x: (int)-200">
+    <gdml_script>
+extends Area2D
 
 var test_var = 1
 
@@ -54,18 +53,25 @@ func _ready():
 
     scale.y = 3
 
+    connect("body_entered", self, "_on_body_entered")
+
 func _physics_process(delta):
     if Input.is_key_pressed(KEY_W):
         position.y -= 10
     if Input.is_key_pressed(KEY_S):
         position.y += 10
 
-    </script>
-</kinematic_body_2_d>
-<kinematic_body_2_d name="RightPaddle" props="position:x: (int) 200">
-    <visibility_notifier_2_d name="RightPaddleVis"/>
-    <script>
-extends KinematicBody2D
+func _on_body_entered(body):
+    if body.name != "Ball":
+        return
+    body.linear_velocity = Vector2.ZERO
+    body.apply_central_impulse(Vector2(rand_range(300, 150), rand_range(-300, 300)))
+
+    </gdml_script>
+</area_2d>
+<area_2d gdml_name="RightPaddle" gdml_props="position:x: (int) 200">
+    <gdml_script>
+extends Area2D
 
 func _ready():
     var cs = CollisionShape2D.new()
@@ -84,17 +90,25 @@ func _ready():
 
     scale.y = 3
 
+    connect("body_entered", self, "_on_body_entered")
+
 func _physics_process(delta):
     if Input.is_key_pressed(KEY_UP):
         position.y -= 10
     if Input.is_key_pressed(KEY_DOWN):
         position.y += 10
 
-    </script>
-</kinematic_body_2_d>
-<rigid_body_2_d name="Ball">
-    <visibility_notifier_2_d name="BallVis"/>
-    <script>
+func _on_body_entered(body):
+    if body.name != "Ball":
+        return
+    body.linear_velocity = Vector2.ZERO
+    body.apply_central_impulse(Vector2(rand_range(-300, -150), rand_range(-100, 100)))
+
+    </gdml_script>
+</area_2d>
+<rigid_body_2D gdml_name="Ball">
+    <visibility_notifier_2D gdml_name="BallVis"/>
+    <gdml_script>
 extends RigidBody2D
 
 func _ready():
@@ -120,6 +134,6 @@ func _ready():
 
     apply_central_impulse(Vector2(-200, 0))
 
-    </script>
-</rigid_body_2_d>
+    </gdml_script>
+</rigid_body_2D>
 

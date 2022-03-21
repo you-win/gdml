@@ -17,6 +17,9 @@ const Stack = preload("res://addons/gdml/generator/stack.gd")
 
 var _context_path := ""
 
+# Needed for parsing tags with 2d/3d in the name and generating a valid godot classname
+var _regex_2d3d: RegEx
+
 var _script_handler: ScriptHandler
 var _style_handler: StyleHandler
 
@@ -33,6 +36,9 @@ func _init(context_path: String, registered_scenes: Dictionary) -> void:
 	_style_handler = StyleHandler.new(_context_path)
 
 	_registered_scenes = registered_scenes
+
+	_regex_2d3d = RegEx.new()
+	_regex_2d3d.compile("\\b\\d(\\w{1})\\b")
 
 ###############################################################################
 # Connections                                                                 #
@@ -114,6 +120,16 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 	return err
 
 static func _create_script_name_from_tag(tag: Tag) -> String:
+	"""
+	Looks through tag data and tries to generate a sensible script name. An explicit 'name' is
+	given priority.
+
+	Params:
+		tag: Tag - The tag to create a script name for
+	
+	Return:
+		String - The script name
+	"""
 	var script_name := ""
 	if tag.attributes.has(Constants.NAME):
 		script_name = tag.attributes[Constants.NAME]
@@ -124,12 +140,35 @@ static func _create_script_name_from_tag(tag: Tag) -> String:
 
 	return script_name
 
-func _handle_element(
-	tag: Tag,
-	stack: Stack
-) -> Object:
+static func _create_godot_class_name_from_tag(regex: RegEx , text: String) -> String:
+	"""
+	Tags are snake-cased (or at least should be snake-cased). Try and convert them back to
+	Godot class names
+
+	Params:
+		regex: RegEx - A precompiled regex search that looks for 2d/2D/3d/3D
+		text: String - The tag name to be converted
+
+	Return:
+		String - The converted String
+	"""
+	var r := ""
+
+	var split := text.split("_", false)
+	if split.size() == 1:
+		return text.capitalize()
+	
+	for i in split:
+		if regex.search(i):
+			r += i.to_upper()
+		else:
+			r += i.capitalize()
+
+	return r
+
+func _handle_element(tag: Tag, stack: Stack) -> Object:
 	var object: Object
-	var godot_class_name := tag.name.capitalize().replace(" ", "")
+	var godot_class_name := _create_godot_class_name_from_tag(_regex_2d3d, tag.name)
 	if ClassDB.class_exists(godot_class_name):
 		object = ClassDB.instance(godot_class_name)
 	elif _registered_scenes.has(tag.name):
@@ -147,49 +186,35 @@ func _handle_element(
 	return object
 
 func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
+	"""
+	Process all attributes on a Tag. The function does not return early on errors.
+	Instead, it will log the error and continue processing, storing the error and
+	potentially overwriting the error with newer errors.
+
+	The 'src' attribute is always processed first if it exists. This is because
+	initial properties can be passed to the resulting script.
+
+	Params:
+		tag: Tag - The Tag to handle
+		object: Object - The object to apply attributes to
+		stack: Stack - The stack being used
+
+	Return:
+		int - The error code. Returns OK if everything was processed successfully
+	"""
 	var err := OK
+
+	# Always process the src first
+	if tag.attributes.has(Constants.SRC):
+		err = _handle_src_attribute(tag, object, stack)
+		if err != OK:
+			push_error("Error occurred while handling src: %s" % tag.attributes[Constants.SRC])
 	
 	for key in tag.attributes.keys():
 		var val = tag.attributes[key]
 		match key:
 			Constants.NAME:
 				object.set(Constants.NAME, val)
-			Constants.SRC:
-				# Try three different methods of finding the src script
-				# 1. Find a temp instance of the script on the stack
-				# 2. Find a persistent instance of the script on the stack
-				# 3. Try to load the script from the context_path + src
-				var script_name := _create_script_name_from_tag(tag)
-				var script := GDScript.new()
-
-				var instance: Object = stack.find_temp_instance(script_name)
-				if instance != null:
-					if instance.is_class("GDScript"):
-						object.set_script(instance)
-						break
-					else:
-						script = object.get_script()
-						if script != null:
-							object.set_script(script.duplicate())
-							break
-
-				instance = stack.find_instance(script_name)
-				if instance != null:
-					if instance.is_class("GDScript"):
-						object.set_script(instance)
-						break
-					else:
-						script = object.get_script()
-						if script != null:
-							object.set_script(script.duplicate())
-							break
-
-				var inner_err: int = _script_handler.handle_tag(tag, script_name, script)
-				if inner_err == OK:
-					object.set_script(script)
-					break
-				
-				err = inner_err
 			Constants.STYLE, Constants.PROPS:
 				_style_handler.handle_inline_style(object, val)
 			_:
@@ -198,7 +223,45 @@ func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
 					push_error("Error occurred while handling connection - callback: %s - %s" %
 						[key, val])
 					err = inner_err
-					break
+	
+	return err
+
+func _handle_src_attribute(tag: Tag, object: Object, stack: Stack) -> int:
+	"""
+	Try three different methods of finding the src script:
+	1. Find a temp instance of the script on the stack
+	2. Find a persistent instance of the script on the stack
+	3. Try to load the script from the context_path + src
+	"""
+	var err := OK
+	var script := GDScript.new()
+
+	var script_name := _create_script_name_from_tag(tag)
+	var instance: Object = stack.find_temp_instance(script_name)
+	if instance != null:
+		if instance.is_class("GDScript"):
+			object.set_script(instance)
+			return err
+		else:
+			script = object.get_script()
+			if script != null:
+				object.set_script(script.duplicate())
+				return err
+
+	instance = stack.find_instance(script_name)
+	if instance != null:
+		if instance.is_class("GDScript"):
+			object.set_script(instance)
+			return err
+		else:
+			script = object.get_script()
+			if script != null:
+				object.set_script(script.duplicate())
+				return err
+
+	err = _script_handler.handle_tag(tag, script_name, script)
+	if err == OK:
+		object.set_script(script)
 	
 	return err
 

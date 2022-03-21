@@ -1,29 +1,29 @@
-<script>
+<gdml_script>
 extends Reference
 
 func _init():
     print("root level script")
-</script>
-<gdml style="anchor_left: 0.5; anchor_right: 1.0; anchor_top: 0.1; anchor_bottom: 1.0">
-    <script src="test_script.gd"/>
-    <script name="builtin_script">
+</gdml_script>
+<gdml gdml_style="anchor_left: 0.5; anchor_right: 1.0; anchor_top: 0.1; anchor_bottom: 1.0">
+    <gdml_script gdml_src="test_script.gd"/>
+    <gdml_script gdml_name="builtin_script">
 func _on_pressed():
     print("not expected")
-    </script>
-    <script src="test_script.gd" name="test_script2">
-        <script>
+    </gdml_script>
+    <gdml_script gdml_src="test_script.gd" gdml_name="test_script2">
+        <gdml_script>
 extends Reference
 
 func _init():
     print("hello nested script")
-        </script>
-    </script>
-    <script name="button_script">
+        </gdml_script>
+    </gdml_script>
+    <gdml_script gdml_name="button_script">
 extends Button
 
 var test_var_button: int = 1
-    </script>
-    <style>
+    </gdml_script>
+    <gdml_style>
 Button {
     --colors-font-color: #000;
     --colors-font-color-disabled: Color(0, 0, 0, 0.5);
@@ -39,16 +39,16 @@ Button.test {
 VBoxContainer {
     background: #333
 }
-    </style>
-    <v_box_container style="anchor:full_rect">
-        <script>
+    </gdml_style>
+    <v_box_container gdml_style="anchor:full_rect">
+        <gdml_script>
 extends VBoxContainer
 
 var test_val = 1
 
 func _ready():
     print("hello vbox")
-        </script>
+        </gdml_script>
         <label>1</label>
         <label>2</label>
         <v_box_container>
@@ -60,31 +60,31 @@ func _ready():
                 hello
             </button>
             <button pressed="_other_pressed">hello 2</button>
-            <button src="button_script">using button_script</button>
+            <button gdml_src="button_script">using button_script</button>
         </v_box_container>
         <label>3</label>
     </v_box_container>
     <!-- <gdml_popup/>
     <test_scene/> -->
-    <gdml style="anchor: full_rect">
-        <button src="button_script">Inner</button>
-        <reference style="anchor: full_rect"/>
-        <gdml style="anchor: full_rect">
-            <button src="button_script">Inner</button>
-            <reference style="anchor: full_rect"/>
-            <gdml style="anchor: full_rect">
-                <button src="button_script">Inner</button>
-                <reference style="anchor: full_rect"/>
+    <gdml gdml_style="anchor: full_rect">
+        <button gdml_src="button_script">Inner</button>
+        <reference gdml_style="anchor: full_rect"/>
+        <gdml gdml_style="anchor: full_rect">
+            <button gdml_src="button_script">Inner</button>
+            <reference gdml_style="anchor: full_rect"/>
+            <gdml gdml_style="anchor: full_rect">
+                <button gdml_src="button_script">Inner</button>
+                <reference gdml_style="anchor: full_rect"/>
             </gdml>
         </gdml>
     </gdml>
 
-    <script>
+    <gdml_script>
 func gives_true() -> bool:
     print("true")
     return true
-    </script>
-    <script name="builtin_script">
+    </gdml_script>
+    <gdml_script gdml_name="builtin_script">
 extends Node
 
 class WrappedInt:
@@ -111,18 +111,18 @@ func _on_pressed(a, b, c, d, e):
 func _other_pressed():
     print("other")
 
-    </script>
-</gdml>
+    </gdml_script>
+</gdml_script>
 
 <gdml>
     <button
-        name="margin_test"
-        style="
+        gdml_name="margin_test"
+        gdml_style="
             margin: 100;
             custom_colors/font_color: (colorN) Red;
         "
     >
         margin test
     </button>
-    <label name="HelloLabel" style="anchor: 0.3; modulate: (color)#ffb2d90a">Hello</label>
+    <label gdml_name="HelloLabel" gdml_style="anchor: 0.3; modulate: (color)#ffb2d90a">Hello</label>
 </gdml>

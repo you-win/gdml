@@ -6,30 +6,30 @@ extends Reference
 const GDML := "gdml"
 # Contains either a src attribute that contains a relative path to a script
 # file or an entire script in the text node
-const SCRIPT := "script"
+const SCRIPT := "gdml_script"
 # Contains either a src attribute that contains a relative path to a css
 # file or an entire stylesheet in the text node
-const STYLE := "style"
+const STYLE := "gdml_style"
 # Group tags together at the group tag's depth
 # For organizational purposes
-const GROUP := "group"
+const GROUP := "gdml_group"
 
 #endregion
 
 #region Attributes
 
-const NAME := "name"
+const NAME := "gdml_name"
 # const STYLE := "style" # We already have a style attribute :D
-const SRC := "src"
-const PROPS := "props"
+const SRC := "gdml_src"
+const PROPS := "gdml_props"
 
 # Whether to attach a script the the parent tag or not
 # Assumed to be true by default
 # If specified to be false, the script will be processed and then discarded
-const ATTACH := "attach"
+const ATTACH := "gdml_attach"
 
-const CLASS := "class"
-const ID := "id"
+const CLASS := "gdml_class"
+const ID := "gdml_id"
 
 #endregion
 
