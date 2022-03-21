@@ -71,9 +71,9 @@ func handle_inline_style(node: Object, raw_style: String) -> void:
 							node.set_indexed(key, bool(val))
 						"string":
 							node.set_indexed(key, val)
-						"color":
+						"color", "Color":
 							node.set_indexed(key, Color(val))
-						"colorN":
+						"colorN", "ColorN":
 							node.set_indexed(key, ColorN(val))
 				else:
 					node.set_indexed(key, float(val))

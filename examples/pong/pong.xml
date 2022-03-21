@@ -7,15 +7,30 @@ func _ready():
 </script>
 
 <canvas_layer>
-    <gdml style="anchor_left: 0.4; anchor_right: 0.6; anchor_bottom: 0.9;margin_top: 10">
-        <label style="align: (int) 1">
-            hello
+    <gdml style="anchor_left: 0.4; anchor_right: 0.6; anchor_bottom: 0.9;margin_top: 10;size_flags_horizontal: (int) 3; size_flags_vertical: (int) 3;">
+        <label style="align: (int) 1" name="ScoreDisplay">
+            <script>
+extends Label
+
+func _ready():
+    var tree = get_tree()
+    yield(tree, "idle_frame")
+
+    var ball_vis = tree.root.find_node("BallVis", true, false)
+    ball_vis.connect("screen_exited", self, "_on_vis_exit")
+
+func _on_vis_exit() -> void:
+    text = "ball is gone!"
+
+            </script>
+            score placeholder
         </label>
     </gdml>
 </canvas_layer>
 
 <camera_2_d props="current: (bool)true"/>
 <kinematic_body_2_d name="LeftPaddle" props="position:x: (int)-200">
+    <visibility_notifier_2_d name="LeftPaddleVis"/>
     <script>
 extends KinematicBody2D
 
@@ -48,6 +63,7 @@ func _physics_process(delta):
     </script>
 </kinematic_body_2_d>
 <kinematic_body_2_d name="RightPaddle" props="position:x: (int) 200">
+    <visibility_notifier_2_d name="RightPaddleVis"/>
     <script>
 extends KinematicBody2D
 
@@ -77,6 +93,7 @@ func _physics_process(delta):
     </script>
 </kinematic_body_2_d>
 <rigid_body_2_d name="Ball">
+    <visibility_notifier_2_d name="BallVis"/>
     <script>
 extends RigidBody2D
 
