@@ -5,6 +5,9 @@ const Constants = preload("res://addons/gdml/constants.gd")
 
 const NodeData = preload("res://addons/gdml/parser/node_data.gd")
 
+# Needed since the xml reader will sometimes run out of things to parse but still return values
+var was_complete := false
+
 func read_path(path: String) -> int:
 	"""
 	Wrapper around XMLParser.open(...) so that I can remember the API
@@ -26,6 +29,10 @@ func read_node() -> NodeData:
 	Read extents of xml element
 	"""
 	var nd := NodeData.new()
+	
+	if was_complete:
+		nd.is_complete = true
+		return nd
 	
 	var is_finished := false
 	while not is_finished:
@@ -57,5 +64,6 @@ func read_node() -> NodeData:
 		if read() != OK:
 			is_finished = true
 			nd.is_complete = true
+			was_complete = true
 	
 	return nd

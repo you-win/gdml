@@ -80,6 +80,33 @@ func find_and_connect(
 	callback_name: String,
 	args: Array = []
 ) -> int:
+	"""
+	Finds the first instance that has the requested callback and uses that callback
+	for the given signal
+	
+	Example:
+	<gdml_script>
+	func my_callback():
+		print("hello")
+	</gdml_script>
+	<button pressed="my_callback">my button</button>
+	
+	The signal "pressed" for the Button node will be connected to the "my_callback"
+	method on the script "my_script".
+	
+	NOTE: If there is another script defined with the same func, the script used
+	is then based on definition order. Giving scripts a name and directly referring
+	to them allows for duplicate method names in different files
+	
+	Params:
+		signal_name: String - The signal name of the `node` param
+		node: Object - The object to call `connect` on
+		callback_name: String - The callback method to search for
+		args: Array - Args to pass to the `connect` method
+	
+	Return:
+		int - The error code
+	"""
 	for i in instances.values():
 		if i.has_method(callback_name):
 			if node.is_connected(signal_name, i, callback_name):
@@ -95,6 +122,34 @@ func direct_connect(
 	callback_name: String,
 	args: Array = []
 ) -> int:
+	"""
+	Finds an instance that matches `instance_name` and uses the `callback_name` method
+	defined on that instance as the callback for a signal connection on `node`
+	
+	Example:
+	<gdml_script name="my_script">
+	func my_callback():
+		print("hello")
+	</gdml_script>
+	<gdml_script>
+	func my_callback():
+		print("not called")
+	</gdml_script>
+	<button pressed="my_script.my_callback">my button</button>
+	
+	The signal "pressed" for the Button node will be connected to the "my_callback"
+	method on the script "my_script".
+	
+	Params:
+		instance_name: String - The instance to look for
+		signal_name: String - The signal name of the `node` param
+		node: Object - The object to call `connect` on
+		callback_name: String - The callback method to search for
+		args: Array - Args to pass to the `connect` method
+	
+	Return:
+		int - The error code
+	"""
 	var instance = instances.get(instance_name)
 	if instance != null:
 		if instance.has_method(callback_name):
@@ -105,6 +160,18 @@ func direct_connect(
 	return Error.Code.NO_VALID_CALLBACK
 
 func find_and_disconnect(signal_name: String, node: Object, callback_name: String) -> int:
+	"""
+	Finds the first instance that has a method called `callback_name` and tries to disconnect
+	the `node`'s `signal_name` from that method
+	
+	Params:
+		signal_name: String - The signal name defined on `node`
+		node: Object - The node to disconnect
+		callback_name: String - The callback to search for and disconnect
+	
+	Return:
+		int - The error code
+	"""
 	for i in instances.values():
 		if i.has_method(callback_name):
 			if not node.is_connected(signal_name, i, callback_name):

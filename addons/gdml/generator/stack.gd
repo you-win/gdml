@@ -44,7 +44,7 @@ func _add_instance(tag: Tag, stack_object: Object, object: Object, param) -> int
 	var inner_err := OK
 
 	# TODO refactor in generator as well
-	if not tag.attributes.has(Constants.TEMP):
+	if not bool(tag.attributes.get(Constants.TEMP, false)):
 		inner_err = stack_object.add_instance(object, param)
 		if inner_err != OK:
 			err = inner_err

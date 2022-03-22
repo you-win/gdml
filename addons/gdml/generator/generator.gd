@@ -79,7 +79,7 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 					continue
 				
 				# TODO refactor in stack as well
-				if not script_tag.attributes.get(Constants.TEMP):
+				if not bool(script_tag.attributes.get(Constants.TEMP, false)):
 					gdml.add_instance(script, script_name)
 				# gdml.add_temp_instance(script, script_name)
 				stack.add_temp_instance(script, script_name)
