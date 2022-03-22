@@ -16,6 +16,8 @@ GDML parses an `xml` file and generates a corresponding tree of Godot `Node`s to
 
 ## Example
 
+### my_gdml_file.xml
+
 1. Create a `CanvasLayer` on layer -1 and a black `ColorRect` to act as the background.
 2. Creates a `gdml` container node that holds an anonymous script.
 3. A `VBoxContainer` is created inside the `gdml` node that contains a `Label` and a `Button`.
@@ -38,6 +40,23 @@ GDML parses an `xml` file and generates a corresponding tree of Godot `Node`s to
         <button pressed="say_hello">click me</button>
     </v_box_container>
 </gdml>
+
+```
+
+### my_scene.gd
+
+1. Load in `gdml.gd` and create a new instance. A path to the directory containing valid `gdml` `xml` files should be provided
+2. `gdml.generate(...)` is called, specifying the main entrypoint for the output
+3. The output is added as a child
+
+```GDScript
+extends Node
+
+func _ready():
+   var gdml = load("path_to_gdml_gd").new("path_to_folder_containing_my_gdml_file")
+   
+   var gui = gdml.generate("my_gdml_file.xml")
+   add_child(gui)
 
 ```
 
