@@ -2,6 +2,7 @@
     extends Node2D
 
     func _ready():
+        randomize()
         Physics2DServer.area_set_param(get_world_2d().space, Physics2DServer.AREA_PARAM_GRAVITY_VECTOR, Vector2.ZERO)
         queue_free()
 </gdml_script>
@@ -104,7 +105,8 @@
         if body.name != "Ball":
             return
         
-        body.linear_velocity.y *= rand_range(-1, -3)
+        body.linear_velocity.y = 0
+        body.linear_velocity.y = rand_range(150, 300) * (1 if side == Side.TOP else -1)
 
 </gdml_script>
 
@@ -136,6 +138,19 @@
 <area_2d gdml_name="RightPaddle" gdml_props="position:x:  200; side: right" gdml_source="Paddle">
 </area_2d>
 <rigid_body_2D gdml_name="Ball">
+    <label gdml_props="rect_position:y: -100">
+        <gdml_script>
+            extends Label
+
+            var parent
+
+            func _ready():
+                parent = get_parent()
+
+            func _process(_delta):
+                text = str(parent.linear_velocity)
+        </gdml_script>
+    </label>
     <visibility_notifier_2D gdml_name="BallVis"/>
     <gdml_script>
         extends RigidBody2D
