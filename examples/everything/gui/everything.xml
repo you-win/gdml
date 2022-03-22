@@ -1,53 +1,54 @@
 <gdml_script>
-extends Reference
+    extends Reference
 
-func _init():
-    print("root level script")
+    func _init():
+        print("root level script")
 </gdml_script>
 <gdml gdml_style="anchor_left: 0.5; anchor_right: 1.0; anchor_top: 0.1; anchor_bottom: 1.0">
     <gdml_script gdml_src="test_script.gd"/>
     <gdml_script gdml_name="builtin_script">
+<!-- An example of how formatting is not necessary, although it might break your editor's code folding -->
 func _on_pressed():
     print("not expected")
     </gdml_script>
     <gdml_script gdml_src="test_script.gd" gdml_name="test_script2">
         <gdml_script>
-extends Reference
+            extends Reference
 
-func _init():
-    print("hello nested script")
+            func _init():
+                print("hello nested script")
         </gdml_script>
     </gdml_script>
     <gdml_script gdml_name="button_script">
-extends Button
+        extends Button
 
-var test_var_button: int = 1
+        var test_var_button: int = 1
     </gdml_script>
     <gdml_style>
-Button {
-    --colors-font-color: #000;
-    --colors-font-color-disabled: Color(0, 0, 0, 0.5);
+        Button {
+            --colors-font-color: #000;
+            --colors-font-color-disabled: Color(0, 0, 0, 0.5);
 
-    --const-hseparation: 5;
+            --const-hseparation: 5;
 
-    --styles-normal-type: Flat;
-    --styles-normal-bg-color: #fff;
-}
-Button.test {
-    --const-hseparation: 10;
-}
-VBoxContainer {
-    background: #333
-}
+            --styles-normal-type: Flat;
+            --styles-normal-bg-color: #fff;
+        }
+        Button.test {
+            --const-hseparation: 10;
+        }
+        VBoxContainer {
+            background: #333
+        }
     </gdml_style>
     <v_box_container gdml_style="anchor:full_rect">
         <gdml_script>
-extends VBoxContainer
+            extends VBoxContainer
 
-var test_val = 1
+            var test_val = 1
 
-func _ready():
-    print("hello vbox")
+            func _ready():
+                print("hello vbox")
         </gdml_script>
         <label>1</label>
         <label>2</label>
@@ -80,36 +81,36 @@ func _ready():
     </gdml>
 
     <gdml_script>
-func gives_true() -> bool:
-    print("true")
-    return true
+        func gives_true() -> bool:
+            print("true")
+            return true
     </gdml_script>
     <gdml_script gdml_name="builtin_script">
-extends Node
+        extends Node
 
-class WrappedInt:
-    var i = 2
+        class WrappedInt:
+            var i = 2
 
-    func _to_string():
-        return str(i)
+            func _to_string():
+                return str(i)
 
-var test_var = WrappedInt.new()
+        var test_var = WrappedInt.new()
 
-func _ready():
-    print_debug(get_meta("__parent__"))
+        func _ready():
+            print_debug(get_meta("__parent__"))
 
-func _process(delta):
-    pass
+        func _process(delta):
+            pass
 
-func add_one(x):
-    return x + 1
+        func add_one(x):
+            return x + 1
 
-func _on_pressed(a, b, c, d, e):
-    test_var.i += 1
-    print("%s %d %s %s %s" % [a, b, c, str(d), e.give_test(test_var.i)])
+        func _on_pressed(a, b, c, d, e):
+            test_var.i += 1
+            print("%s %d %s %s %s" % [a, b, c, str(d), e.give_test(test_var.i)])
 
-func _other_pressed():
-    print("other")
+        func _other_pressed():
+            print("other")
 
     </gdml_script>
 </gdml>
