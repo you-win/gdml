@@ -5,7 +5,7 @@ func _ready():
     Physics2DServer.area_set_param(get_world_2d().space, Physics2DServer.AREA_PARAM_GRAVITY_VECTOR, Vector2.ZERO)
     queue_free()
 </gdml_script>
-<gdml_script gdml_name="Paddle">
+<gdml_script gdml_name="Paddle" gdml_temp="true">
 extends Area2D
 
 const Side := {

@@ -9,10 +9,6 @@ const Tag = preload("res://addons/gdml/parser/tag.gd")
 
 # Persistent instances that will continue to exist after generation
 var instances := {} # Instance name: String -> Object
-# Ephemeral instances that are cleared after generation
-var temp_instances := {} # Temp instance name: String -> Object
-
-var __data__ := {} # Data name: String -> Variant
 
 ###############################################################################
 # Builtin functions                                                           #
@@ -21,9 +17,6 @@ var __data__ := {} # Data name: String -> Variant
 func _init() -> void:
 	set_anchors_preset(Control.PRESET_WIDE)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-func _ready() -> void:
-	temp_instances.clear()
 
 ###############################################################################
 # Connections                                                                 #
@@ -58,22 +51,11 @@ func add_instance(thing, instance_name: String) -> int:
 	
 	return OK
 
-func add_temp_instance(thing, instance_name: String) -> int:
-	if typeof(thing) != TYPE_OBJECT:
-		return Error.Code.INVALID_INSTANCE
-
-	temp_instances[instance_name] = thing
-
-	return OK
-
 func find_instance(instance_name: String) -> Object:
 	return instances.get(instance_name)
-	
-func find_temp_instance(instance_name: String) -> Object:
-	return temp_instances.get(instance_name)
 
 func find_variable(instance_name: String, thing: String):
-	var instance = instances.get(instance_name, temp_instances.get(instance_name))
+	var instance = instances.get(instance_name)
 	if instance == null:
 		return null
 

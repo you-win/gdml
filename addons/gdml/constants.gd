@@ -25,9 +25,9 @@ const SOURCE := "gdml_source"
 const PROPS := "gdml_props"
 
 # Whether to attach a script the the parent tag or not
-# Assumed to be true by default
-# If specified to be false, the script will be processed and then discarded
-const ATTACH := "gdml_attach"
+# Assumed to be false by default
+# If specified to be true, the script will be processed and then discarded
+const TEMP := "gdml_temp"
 
 const CLASS := "gdml_class"
 const ID := "gdml_id"

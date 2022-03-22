@@ -79,10 +79,12 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 					continue
 				
 				# TODO refactor in stack as well
-				gdml.add_instance(script, script_name)
-				gdml.add_temp_instance(script, script_name)
+				if not script_tag.attributes.get(Constants.TEMP):
+					gdml.add_instance(script, script_name)
+				# gdml.add_temp_instance(script, script_name)
+				stack.add_temp_instance(script, script_name)
 
-			stack.add_gdml(tag.depth, gdml)
+			stack.add_gdml(tag, gdml)
 		Constants.SCRIPT:
 			var script_name := _create_script_name_from_tag(tag)
 			var script := GDScript.new()
@@ -90,7 +92,7 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 			if err != OK:
 				push_error("Failure when handling script for tag: %s" % tag.to_string())
 
-			stack.add_child(tag.depth, script, script_name)
+			stack.add_child(tag, script, script_name)
 		Constants.STYLE:
 			var themes: Dictionary = _style_handler.handle_style(tag)
 			if themes.empty():
@@ -110,7 +112,7 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 				push_error("Unable to handle element for tag %s" % tag.to_string())
 				return Error.Code.HANDLE_ELEMENT_FAILURE
 
-			stack.add_child(tag.depth, obj, _create_script_name_from_tag(tag))
+			stack.add_child(tag, obj, _create_script_name_from_tag(tag))
 
 	return err
 
@@ -126,14 +128,6 @@ static func _create_script_name_from_tag(tag: Tag) -> String:
 		String - The script name
 	"""
 	var script_name := ""
-#	if tag.attributes.has(Constants.NAME):
-#		script_name = tag.attributes[Constants.NAME]
-#	elif tag.attributes.has(Constants.SRC):
-#		script_name = tag.attributes[Constants.SRC]
-#	elif tag.attributes.has(Constants.SOURCE):
-#		script_name = tag.attributes[Constants.SOURCE]
-#	else:
-#		script_name = Constants.SCRIPT_NAME_TEMPLATE % tag.location
 	
 	if tag.name == Constants.SCRIPT:
 		if tag.attributes.has(Constants.NAME):
