@@ -109,9 +109,10 @@ func _on_body_entered(body):
 
 </gdml_script>
 
-<canvas_layer>
+<canvas_layer gdml_props="layer: -1">
+    <color_rect gdml_style="anchor:full_rect;color: (colorN)Black"/>
     <gdml gdml_style="anchor_left: 0.5; anchor_top: 0.5;size_flags_horizontal: (int) 3; size_flags_vertical: (int) 3;">
-        <label gdml_style="align: (int) 1" gdml_name="ScoreDisplay">
+        <label gdml_style="align: (int) 1; modulate: (colorN) white" gdml_name="ScoreDisplay">
             <gdml_script>
 extends Label
 
