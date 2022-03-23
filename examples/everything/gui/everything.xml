@@ -41,6 +41,9 @@ func _on_pressed():
             background: #333
         }
     </gdml_style>
+    <count_up gdml_props="rect_position:x: 100"/>
+    <count_backwards gdml_props="rect_position:x: 200"/>
+    <text_xml gdml_name="text_xml"/>
     <v_box_container gdml_style="anchor:full_rect">
         <gdml_script>
             extends VBoxContainer
@@ -65,8 +68,6 @@ func _on_pressed():
         </v_box_container>
         <label>3</label>
     </v_box_container>
-    <!-- <gdml_popup/>
-    <test_scene/> -->
     <gdml gdml_style="anchor: full_rect">
         <button gdml_src="button_script">Inner</button>
         <reference gdml_style="anchor: full_rect"/>

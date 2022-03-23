@@ -35,9 +35,23 @@ func _init(super_root: Control) -> void:
 # Private functions                                                           #
 ###############################################################################
 
+func _normalize_stack(depth: int) -> int:
+	if _depth > depth:
+		while _stack.size() > depth:
+			if pop() == null:
+				return Error.Code.BAD_STACK
+	elif _depth == depth:
+		if pop() == null:
+			return Error.Code.BAD_STACK
+
+	return OK
+
+func _finalize_stack(depth: int, object: Object) -> void:
+	push(object)
+	_depth = depth
+
 func _add_child(depth: int, object: Object) -> void:
 	_stack[-1].add_child(object)
-	_depth = depth
 
 func _add_instance(tag: Tag, stack_object: Object, object: Object, param) -> int:
 	var err := OK
@@ -88,25 +102,28 @@ func add_child(tag: Tag, object: Object, param = null) -> int:
 		object: Object - The instance to be added
 		param - Duck-typed value for scripts. Could be an InstanceDescriptor or a String name
 	"""
+	var err := OK
 	var depth: int = tag.depth
 
-	if _depth > depth:
-		while _stack.size() > depth:
-			pop()
-	elif _depth == depth:
-		if pop() == null:
-			return Error.Code.BAD_STACK
+	# if _depth > depth:
+	# 	while _stack.size() > depth:
+	# 		pop()
+	# elif _depth == depth:
+	# 	if pop() == null:
+	# 		return Error.Code.BAD_STACK
+	err = _normalize_stack(depth)
+	if err != OK:
+		return err
 	
 	if object.is_class("Node"):
 		_add_child(depth, object)
-		push(object)
 		
 		if typeof(param) == TYPE_BOOL and param == true:
-			_gdml_locations.append(_stack.size() - 1)
+			_gdml_locations.append(_stack.size())
 			_temp_instances.append({})
 	else:
 		if _stack.size() == 1:
-			return _add_instance(tag, root(), object, param)
+			err = _add_instance(tag, root(), object, param)
 		else:
 			var stack_top: Object = top()
 			
@@ -114,11 +131,34 @@ func add_child(tag: Tag, object: Object, param = null) -> int:
 				if not stack_top is ControlRoot:
 					stack_top.set_script(object)
 				else:
-					return _add_instance(tag, stack_top, object, param)
+					err = _add_instance(tag, stack_top, object, param)
 			else:
 				stack_top.set_meta(param, object)
 	
-	return OK
+	# Push the object onto the stack no matter what
+	# push(object)
+	# _depth = depth
+	_finalize_stack(depth, object)
+	
+	return err
+
+func add_style(tag: Tag, theme: Theme) -> int:
+	var err := OK
+	var depth: int = tag.depth
+
+	err = _normalize_stack(depth)
+	if err != OK:
+		return err
+
+	var stack_top: Object = top()
+	if stack_top.is_class("Control"):
+		stack_top.theme = theme
+	else:
+		root().theme = theme
+
+	_finalize_stack(depth, theme)
+
+	return err
 
 func add_temp_instance(thing, instance_name: String) -> int:
 	if typeof(thing) != TYPE_OBJECT:

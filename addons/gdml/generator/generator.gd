@@ -1,5 +1,12 @@
 extends Reference
 
+enum ElementFileType {
+	NONE = 0,
+	PACKED_SCENE,
+	GDSCRIPT,
+	GDML,
+}
+
 const OUTPUT_NAME := "GDML"
 
 const ScriptHandler = preload("res://addons/gdml/generator/handlers/script_handler.gd")
@@ -101,11 +108,12 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 
 			# TODO this always uses the default theme
 			# TODO maybe don't immediately apply the theme?
-			var stack_top: Object = stack.top()
-			if stack_top.is_class("Control"):
-				stack_top.theme = themes["default"]
-			else:
-				stack.root().theme = themes["default"]
+			stack.add_style(tag, themes["default"])
+			# var stack_top: Object = stack.top()
+			# if stack_top.is_class("Control"):
+			# 	stack_top.theme = themes["default"]
+			# else:
+			# 	stack.root().theme = themes["default"]
 		_:
 			var obj: Object = _handle_element(tag, stack)
 			if obj == null:
@@ -178,8 +186,41 @@ func _handle_element(tag: Tag, stack: Stack) -> Object:
 	var godot_class_name := _create_godot_class_name_from_tag(_regex_2d3d, tag.name)
 	if ClassDB.class_exists(godot_class_name):
 		object = ClassDB.instance(godot_class_name)
-	elif _registered_scenes.has(tag.name):
-		object = _registered_scenes[tag.name].instance()
+	elif _registered_scenes.has(godot_class_name):
+		var scene = _registered_scenes[godot_class_name]
+		if scene is String:
+			var file_path: String = scene if scene.is_abs_path() else "%s/%s" % [_context_path, scene]
+			
+			match scene.get_extension():
+				Constants.TSCN, Constants.SCN:
+					var packed_scene = load(file_path)
+					if packed_scene == null:
+						push_error("Unable to load file at path %s" % file_path)
+						return null
+					if not packed_scene is PackedScene:
+						push_error("Unexpected object %s found at path %s" % [str(packed_scene), file_path])
+						return null
+					object = packed_scene.instance()
+				Constants.GDSCRIPT:
+					var file := File.new()
+					if file.open(file_path, File.READ) != OK:
+						push_error("File path not found for GDScript %s" % file_path)
+						return null
+					var script := GDScript.new()
+					script.source_code = file.get_as_text()
+					if script.reload() != OK:
+						push_error("Invalid script for %s" % file_path)
+						return null
+					object = script.new()
+				Constants.GDML, Constants.XML:
+					# TODO this seems like a weird corner case
+					var gdml = load("res://addons/gdml/gdml.gd").new(_context_path)
+					object = gdml.generate(file_path)
+				_:
+					push_error("Unrecognized file type for file %s" % scene)
+					return null
+		elif scene is PackedScene:
+			object = scene.instance()
 	else:
 		push_error("Unknown tag or scene %s" % tag.name)
 		return null

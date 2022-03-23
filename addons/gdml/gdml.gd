@@ -13,9 +13,7 @@ const CssProcessor = preload("res://addons/gdml/godot-css-theme/css_processer.gd
 const TEXT_CONTROLS := ["Label", "Button", "LineEdit", "TextEdit"]
 const CONTROL_ROOT_PATH := "res://addons/gdml/control_root.gd"
 
-var registered_scenes := {
-	"test_scene": ""
-}
+var registered_scenes := {} # Scene name: String -> path (rel/abs) : String | PackedScene
 
 var context_path := ""
 
@@ -50,3 +48,24 @@ func generate(input: String) -> Control:
 		return output
 		
 	return output
+
+func register_scene(thing_name: String, thing) -> int:
+	"""
+	Registers a scene to be used during generation
+	
+	Params:
+		thing_name: String - The name to be used, tags will be matched against this name
+		thing: Variant - Can be either a String path (rel/abs) or a PackedScene
+	
+	Return:
+		int - The error code
+	"""
+	if typeof(thing) != TYPE_STRING and not thing is PackedScene:
+		return Error.Code.INVALID_REGISTERED_SCENE
+	
+	if registered_scenes.has(thing_name):
+		push_warning("registered_scenes already contains %s, overwriting" % thing_name)
+	
+	registered_scenes[thing_name] = thing
+	
+	return OK

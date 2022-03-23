@@ -5,6 +5,12 @@ enum Code {
 	
 	MISSING_CONTEXT_PATH,
 	FILE_OPEN_FAILURE,
+
+	#region GDML
+
+	INVALID_REGISTERED_SCENE,
+
+	#endregion
 	
 	#region Reader
 	

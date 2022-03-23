@@ -1,5 +1,11 @@
 extends Reference
 
+const TSCN := "tscn"
+const SCN := "scn"
+const GDSCRIPT := "gd"
+# const GDML := "gdml"
+const XML := "xml"
+
 #region Tags
 
 # Creates a new root Control under the main output Control

@@ -1,0 +1,5 @@
+<canvas_layer gdml_props="layer: -1">
+    <center_container gdml_style="anchor: full_rect">
+        <label>Other text</label>
+    </center_container>
+</canvas_layer>

@@ -1,0 +1,17 @@
+<gdml gdml_props="margin_top: 10;margin_left:10">
+    <v_box_container>
+        <label gdml_props="text: level 1"/>
+        <gdml>
+            <reference/>
+            <v_box_container>
+                <label gdml_props="text: level 2"/>
+                <gdml>
+                    <reference/>
+                    <v_box_container>
+                        <label gdml_props="text: level 3"/>
+                    </v_box_container>
+                </gdml>
+            </v_box_container>
+        </gdml>
+    </v_box_container>
+</gdml>

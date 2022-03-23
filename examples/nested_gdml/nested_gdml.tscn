@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://examples/nested_gdml/nested_gdml.gd" type="Script" id=1]
+
+[node name="NestedGdml" type="CanvasLayer"]
+script = ExtResource( 1 )
