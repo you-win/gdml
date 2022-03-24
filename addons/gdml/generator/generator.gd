@@ -65,7 +65,25 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 
 	match tag.name:
 		Constants.GDML:
-			var gdml := ControlRoot.new()
+			var gdml: Control
+
+			# TODO this is gross
+			if tag.attributes.has(Constants.CAST):
+				var cast_name: String = tag.attributes[Constants.CAST]
+				if ClassDB.class_exists(cast_name):
+					gdml = ClassDB.instance(cast_name)
+				else:
+					cast_name = _create_godot_class_name_from_string(_regex_2d3d, cast_name)
+					if ClassDB.class_exists(cast_name):
+						gdml = ClassDB.instance(cast_name)
+
+				if gdml == null:
+					err = Error.Code.BAD_CAST
+					return err
+
+				gdml.set_script(ControlRoot)
+			else:
+				gdml = ControlRoot.new()
 
 			_handle_attributes(tag, gdml, stack)
 
@@ -150,7 +168,7 @@ static func _create_script_name_from_tag(tag: Tag) -> String:
 
 	return script_name
 
-static func _create_godot_class_name_from_tag(regex: RegEx , text: String) -> String:
+static func _create_godot_class_name_from_string(regex: RegEx , text: String) -> String:
 	"""
 	Tags are snake-cased (or at least should be snake-cased). Try and convert them back to
 	Godot class names
@@ -178,18 +196,21 @@ static func _create_godot_class_name_from_tag(regex: RegEx , text: String) -> St
 
 func _handle_element(tag: Tag, stack: Stack) -> Object:
 	var object: Object
-	var godot_class_name := _create_godot_class_name_from_tag(_regex_2d3d, tag.name)
-	if ClassDB.class_exists(godot_class_name):
-		object = ClassDB.instance(godot_class_name)
-	elif _registered_scenes.has(godot_class_name): # TODO This can be extracted and reused for implicit srcs
-		var scene = _registered_scenes[godot_class_name]
-		if scene is String:
-			object = _handle_file_path(_context_path, scene)
-		elif scene is PackedScene:
-			object = scene.instance()
-	else:
-		push_error("Unknown tag or scene %s" % tag.name)
-		return null
+	if ClassDB.class_exists(tag.name):
+		object = ClassDB.instance(tag.name)
+	if object == null:
+		var godot_class_name := _create_godot_class_name_from_string(_regex_2d3d, tag.name)
+		if ClassDB.class_exists(godot_class_name):
+			object = ClassDB.instance(godot_class_name)
+		elif _registered_scenes.has(godot_class_name): # TODO This can be extracted and reused for implicit srcs
+			var scene = _registered_scenes[godot_class_name]
+			if scene is String:
+				object = _handle_file_path(_context_path, scene)
+			elif scene is PackedScene:
+				object = scene.instance()
+		else:
+			push_error("Unknown tag or scene %s" % tag.name)
+			return null
 
 	object.set("text", tag.text)
 
@@ -236,6 +257,9 @@ func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
 			Constants.STYLE, Constants.PROPS:
 				_style_handler.handle_inline_style(object, val)
 			Constants.SRC, Constants.SOURCE:
+				# Already handled
+				pass
+			Constants.CAST:
 				# Already handled
 				pass
 			_:

@@ -43,6 +43,8 @@ enum Code {
 	
 	BAD_STACK,
 	MISSING_ON_STACK,
+
+	BAD_CAST,
 	
 	#endregion
 
