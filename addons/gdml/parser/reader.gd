@@ -48,6 +48,11 @@ func read_node() -> NodeData:
 				nd.node_name = get_node_name()
 				for i in get_attribute_count():
 					nd.attributes[get_attribute_name(i)] = get_attribute_value(i)
+
+				# If the tag is self closing, not necessarily empty
+				if is_empty():
+					print(nd.node_name)
+					nd.is_empty = true
 			XMLParser.NODE_TEXT:
 				nd.text += get_node_data() if nd.node_name == Constants.SCRIPT else get_node_data().strip_edges()
 				if OS.get_name().to_lower() == "linux":

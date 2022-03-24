@@ -87,8 +87,13 @@ func _process_nodes(reader: Reader) -> Array:
 		var stack: Array = open_close_stack[node_name]
 
 		if data.is_open:
-			stack.append(data)
 			node_stack.append(data)
+			if not data.is_empty:
+				stack.append(data)
+			else:
+				var close_node_data := NodeData.new()
+				close_node_data.copy_as_close(data)
+				node_stack.append(close_node_data)
 		else:
 			var open_node: NodeData = stack.pop_back()
 			if open_node == null:

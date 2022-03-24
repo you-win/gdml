@@ -2,6 +2,7 @@ extends Reference
 
 var node_name := ""
 var is_open := false
+var is_empty := false
 var attributes := {} # Attribute: String -> Attribute value: Variant
 var text := ""
 var is_complete := false # If we are done parsing the entire xml file
