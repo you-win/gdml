@@ -67,6 +67,7 @@ func _on_pressed():
             <button gdml_src="button_script">using button_script</button>
         </v_box_container>
         <gdml gdml_name="loaded" gdml_src="loaded_gdml.gdml" gdml_cast="MarginContainer"/>
+        <gdml gdml_name="loaded_snake_case" gdml_src="loaded_gdml.gdml" gdml_cast="margin_container"/>
         <label>3</label>
     </v_box_container>
     <gdml gdml_style="anchor: full_rect">
