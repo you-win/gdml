@@ -66,10 +66,11 @@ func _on_pressed():
             <button pressed="_other_pressed">hello 2</button>
             <button gdml_src="button_script">using button_script</button>
         </v_box_container>
+        <!-- <gdml gdml_name="loaded" gdml_src="loaded_gdml.gdml"/> -->
         <label>3</label>
     </v_box_container>
     <gdml gdml_style="anchor: full_rect">
-        <button gdml_src="button_script">Inner</button>
+        <button gdml_src="button_script"><button gdml_style="text: open close button"/>Inner</button>
         <reference gdml_style="anchor: full_rect"/>
         <gdml gdml_style="anchor: full_rect">
             <button gdml_src="button_script">Inner</button>

@@ -109,11 +109,6 @@ func _generate(stack: Stack, layout: Layout, visited_locations: Array, idx: int)
 			# TODO this always uses the default theme
 			# TODO maybe don't immediately apply the theme?
 			stack.add_style(tag, themes["default"])
-			# var stack_top: Object = stack.top()
-			# if stack_top.is_class("Control"):
-			# 	stack_top.theme = themes["default"]
-			# else:
-			# 	stack.root().theme = themes["default"]
 		_:
 			var obj: Object = _handle_element(tag, stack)
 			if obj == null:
@@ -186,39 +181,10 @@ func _handle_element(tag: Tag, stack: Stack) -> Object:
 	var godot_class_name := _create_godot_class_name_from_tag(_regex_2d3d, tag.name)
 	if ClassDB.class_exists(godot_class_name):
 		object = ClassDB.instance(godot_class_name)
-	elif _registered_scenes.has(godot_class_name):
+	elif _registered_scenes.has(godot_class_name): # TODO This can be extracted and reused for implicit srcs
 		var scene = _registered_scenes[godot_class_name]
 		if scene is String:
-			var file_path: String = scene if scene.is_abs_path() else "%s/%s" % [_context_path, scene]
-			
-			match scene.get_extension():
-				Constants.TSCN, Constants.SCN:
-					var packed_scene = load(file_path)
-					if packed_scene == null:
-						push_error("Unable to load file at path %s" % file_path)
-						return null
-					if not packed_scene is PackedScene:
-						push_error("Unexpected object %s found at path %s" % [str(packed_scene), file_path])
-						return null
-					object = packed_scene.instance()
-				Constants.GDSCRIPT:
-					var file := File.new()
-					if file.open(file_path, File.READ) != OK:
-						push_error("File path not found for GDScript %s" % file_path)
-						return null
-					var script := GDScript.new()
-					script.source_code = file.get_as_text()
-					if script.reload() != OK:
-						push_error("Invalid script for %s" % file_path)
-						return null
-					object = script.new()
-				Constants.GDML, Constants.XML:
-					# TODO this seems like a weird corner case
-					var gdml = load("res://addons/gdml/gdml.gd").new(_context_path)
-					object = gdml.generate(file_path)
-				_:
-					push_error("Unrecognized file type for file %s" % scene)
-					return null
+			object = _handle_file_path(_context_path, scene)
 		elif scene is PackedScene:
 			object = scene.instance()
 	else:
@@ -281,6 +247,38 @@ func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
 	
 	return err
 
+static func _handle_file_path(context_path: String, file_path: String) -> Object:
+	file_path = file_path if file_path.is_abs_path() else "%s/%s" % [context_path, file_path]
+
+	match file_path.get_extension():
+		Constants.TSCN, Constants.SCN:
+			var packed_scene = load(file_path)
+			if packed_scene == null:
+				push_error("Unable to load file at path %s" % file_path)
+				return null
+			if not packed_scene is PackedScene:
+				push_error("Unexpected object %s found at path %s" % [str(packed_scene), file_path])
+				return null
+			return packed_scene.instance()
+		Constants.GDSCRIPT:
+			var file := File.new()
+			if file.open(file_path, File.READ) != OK:
+				push_error("File path not found for GDScript %s" % file_path)
+				return null
+			var script := GDScript.new()
+			script.source_code = file.get_as_text()
+			if script.reload() != OK:
+				push_error("Invalid script for %s" % file_path)
+				return null
+			return script.new()
+		Constants.GDML, Constants.XML:
+			# TODO this seems like a weird corner case
+			var gdml = load("res://addons/gdml/gdml.gd").new(context_path)
+			return gdml.generate(file_path)
+		_:
+			push_error("Unrecognized file type for file %s" % file_path)
+			return null
+
 func _handle_src_attribute(tag: Tag, object: Object, stack: Stack) -> int:
 	"""
 	Try three different methods of finding the src script:
@@ -314,9 +312,17 @@ func _handle_src_attribute(tag: Tag, object: Object, stack: Stack) -> int:
 				object.set_script(script.duplicate())
 				return err
 
-	err = _script_handler.handle_tag(tag, script_name, script)
-	if err == OK:
-		object.set_script(script)
+	if tag.name == Constants.GDML:
+		instance = _handle_file_path(_context_path, script_name)
+		if instance != null:
+			for c in instance.get_children():
+				instance.remove_child(c)
+				object.add_child(c)
+			object.instances = instance.instances
+	else:
+		err = _script_handler.handle_tag(tag, script_name, script)
+		if err == OK:
+			object.set_script(script)
 	
 	return err
 

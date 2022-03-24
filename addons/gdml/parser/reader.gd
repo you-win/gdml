@@ -8,17 +8,21 @@ const NodeData = preload("res://addons/gdml/parser/node_data.gd")
 # Needed since the xml reader will sometimes run out of things to parse but still return values
 var was_complete := false
 
-func read_path(path: String) -> int:
-	"""
-	Wrapper around XMLParser.open(...) so that I can remember the API
-	"""
-	if open(path) != OK:
-		return Error.Code.OPEN_PATH_FAILURE
-	return OK
+#func read_path(path: String) -> int:
+#	"""
+#	Wrapper around XMLParser.open(...) so that I can remember the API
+#	"""
+#	if open(path) != OK:
+#		return Error.Code.OPEN_PATH_FAILURE
+#	return OK
 
 func read_buffer(buffer: PoolByteArray) -> int:
 	"""
-	Wrapper around XMLParser.read_buffer(...) so that I can remember the API
+	Wrapper around XMLParser.read_buffer(...)
+	
+	NOTE never call XMLParser.open(...) since the file must be preprocessed anyways to remove
+	leading/trailing newlines and also handle template expressions
+	e.g. {{ if ... }} expressions or {{ range ... }} expression
 	"""
 	if open_buffer(buffer) != OK:
 		return Error.Code.OPEN_BUFFER_FAILURE

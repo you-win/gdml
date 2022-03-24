@@ -47,7 +47,7 @@ func _process_nodes(reader: Reader) -> Array:
 	"""
 	var node_stack := []
 
-	var open_close_stack := {} # Tag name: String -> Stack: Array
+	var open_close_stack := {} # Tag name: String -> Stack: Array[Node names: String]
 	var node_location: int = -1
 
 	while true:
@@ -155,10 +155,18 @@ func parse(input: String, layout: Layout) -> int:
 	else:
 		is_path = false
 	
+	if is_path:
+		var file := File.new()
+		if file.open(input, File.READ) != OK:
+			return Error.Code.FILE_OPEN_FAILURE
+		
+		input = file.get_as_text().strip_edges()
+	
 	var reader := Reader.new()
-	var err := reader.read_path(input) if is_path else reader.read_buffer(input.to_utf8())
+#	var err := reader.read_path(input) if is_path else reader.read_buffer(input.to_utf8())
+	var err := reader.read_buffer(input.to_utf8())
 	if err != OK:
-		return Error.READER_READ_FAILURE
+		return Error.Code.READER_READ_FAILURE
 	
 	var element_nodes: Array = _process_nodes(reader)
 	_generate_layout(element_nodes, layout)

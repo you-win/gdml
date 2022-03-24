@@ -62,7 +62,6 @@ func _add_instance(tag: Tag, stack_object: Object, object: Object, param) -> int
 		inner_err = stack_object.add_instance(object, param)
 		if inner_err != OK:
 			err = inner_err
-	# inner_err = stack_object.add_temp_instance(object, param)
 	inner_err = add_temp_instance(object, param)
 	if inner_err != OK:
 		err = inner_err
@@ -105,12 +104,6 @@ func add_child(tag: Tag, object: Object, param = null) -> int:
 	var err := OK
 	var depth: int = tag.depth
 
-	# if _depth > depth:
-	# 	while _stack.size() > depth:
-	# 		pop()
-	# elif _depth == depth:
-	# 	if pop() == null:
-	# 		return Error.Code.BAD_STACK
 	err = _normalize_stack(depth)
 	if err != OK:
 		return err
@@ -135,9 +128,6 @@ func add_child(tag: Tag, object: Object, param = null) -> int:
 			else:
 				stack_top.set_meta(param, object)
 	
-	# Push the object onto the stack no matter what
-	# push(object)
-	# _depth = depth
 	_finalize_stack(depth, object)
 	
 	return err
