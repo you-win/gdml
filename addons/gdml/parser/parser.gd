@@ -168,7 +168,6 @@ func parse(input: String, layout: Layout) -> int:
 		input = file.get_as_text().strip_edges()
 	
 	var reader := Reader.new()
-#	var err := reader.read_path(input) if is_path else reader.read_buffer(input.to_utf8())
 	var err := reader.read_buffer(input.to_utf8())
 	if err != OK:
 		return Error.Code.READER_READ_FAILURE

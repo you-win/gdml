@@ -1,8 +1,22 @@
+<!-- Configuration code -->
+[[
+# Variable with an initial value
+var should_show = true
+
+# Variable with injected value
+var input_string: String
+
+func is_true():
+    return true
+]]
+
+<!-- Root level script with injected variable -->
 <gdml_script>
     extends Reference
 
     func _init():
         print("root level script")
+        print("{{ .input_string }}")
 </gdml_script>
 <gdml gdml_style="anchor_left: 0.5; anchor_right: 1.0; anchor_top: 0.1; anchor_bottom: 1.0">
     <gdml_script gdml_src="test_script.gd"/>
@@ -11,6 +25,7 @@
 func _on_pressed():
     print("not expected")
     </gdml_script>
+    {{ if .is_true }}
     <gdml_script gdml_src="test_script.gd" gdml_name="test_script2">
         <gdml_script>
             extends Reference
@@ -19,6 +34,7 @@ func _on_pressed():
                 print("hello nested script")
         </gdml_script>
     </gdml_script>
+    {{ end if }}
     <gdml_script gdml_name="button_script">
         extends Button
 
