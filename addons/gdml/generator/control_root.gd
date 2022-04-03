@@ -2,10 +2,10 @@ extends Control
 
 const META_KEY := "__parent__"
 
-const Constants = preload("res://addons/gdml/constants.gd")
-const Error = preload("res://addons/gdml/error.gd")
+const Constants = preload("../constants.gd")
+const Error = preload("../error.gd")
 
-const Tag = preload("res://addons/gdml/parser/tag.gd")
+const Tag = preload("../parser/tag.gd")
 
 # Persistent instances that will continue to exist after generation
 var instances := {} # Instance name: String -> Object

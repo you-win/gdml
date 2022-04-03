@@ -1,10 +1,10 @@
 extends Reference
 
-const Constants = preload("res://addons/gdml/constants.gd")
-const Error = preload("res://addons/gdml/error.gd")
+const Constants = preload("../constants.gd")
+const Error = preload("../error.gd")
 
-const NodeData = preload("res://addons/gdml/parser/node_data.gd")
-const Tag = preload("res://addons/gdml/parser/tag.gd")
+const NodeData = preload("./node_data.gd")
+const Tag = preload("./tag.gd")
 
 const UNNESTABLE_TAGS := [Constants.SCRIPT, Constants.STYLE]
 

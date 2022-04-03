@@ -1,10 +1,10 @@
 extends Reference
 
-const Constants = preload("res://addons/gdml/constants.gd")
-const Error = preload("res://addons/gdml/error.gd")
+const Constants = preload("../constants.gd")
+const Error = preload("../error.gd")
 
-const ControlRoot = preload("res://addons/gdml/generator/control_root.gd")
-const Tag = preload("res://addons/gdml/parser/tag.gd")
+const ControlRoot = preload("./control_root.gd")
+const Tag = preload("../parser/tag.gd")
 
 # Stack containing all objects by depth
 # This means that when the depth increases, objects are added to the stack

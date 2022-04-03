@@ -1,6 +1,6 @@
 extends Reference
 
-const Stylesheet = preload("res://addons/gdml/godot-css-theme/stylesheet.gd")
+const Stylesheet = preload("./stylesheet.gd")
 
 # TODO: write test for conflicting properties with base syntax
 func simplify(stylesheet: Stylesheet) -> Stylesheet:

@@ -1,8 +1,8 @@
 extends Reference
 
-var css_parser = preload("res://addons/gdml/godot-css-theme/css_parser.gd").new()
-var theme_applier = preload("res://addons/gdml/godot-css-theme/theme_applier.gd").new()
-var css_simplifier = preload("res://addons/gdml/godot-css-theme/css_simplifier.gd").new()
+var css_parser = preload("./css_parser.gd").new()
+var theme_applier = preload("./theme_applier.gd").new()
+var css_simplifier = preload("./css_simplifier.gd").new()
 
 # Each class is plit into a different theme
 var output := {} # Theme name: String -> Theme

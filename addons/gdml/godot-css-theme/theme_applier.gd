@@ -1,6 +1,6 @@
 extends Reference
 
-const Stylesheet = preload("res://addons/gdml/godot-css-theme/stylesheet.gd")
+const Stylesheet = preload("./stylesheet.gd")
 
 var EMPTY_STYLE = StyleBoxEmpty.new()
 

@@ -2,16 +2,15 @@ extends Reference
 
 signal layout_created(layout)
 
-const Error = preload("res://addons/gdml/error.gd")
-const Constants = preload("res://addons/gdml/constants.gd")
+const Error = preload("./error.gd")
+const Constants = preload("./constants.gd")
 
-const Parser = preload("res://addons/gdml/parser/parser.gd")
-const Generator = preload("res://addons/gdml/generator/generator.gd")
+const Parser = preload("./parser/parser.gd")
+const Generator = preload("./generator/generator.gd")
 
-const CssProcessor = preload("res://addons/gdml/godot-css-theme/css_processer.gd")
+const CssProcessor = preload("./godot-css-theme/css_processer.gd")
 
 const TEXT_CONTROLS := ["Label", "Button", "LineEdit", "TextEdit"]
-const CONTROL_ROOT_PATH := "res://addons/gdml/control_root.gd"
 
 var registered_scenes := {} # Scene name: String -> path (rel/abs) : String | PackedScene
 

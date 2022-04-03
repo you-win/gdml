@@ -1,9 +1,9 @@
-extends "res://addons/gdml/generator/handlers/abstract_handler.gd"
+extends "./abstract_handler.gd"
 
-const Error = preload("res://addons/gdml/error.gd")
-const Constants = preload("res://addons/gdml/constants.gd")
+const Error = preload("../../error.gd")
+const Constants = preload("../../constants.gd")
 
-const Tag = preload("res://addons/gdml/parser/tag.gd")
+const Tag = preload("../../parser/tag.gd")
 
 # Needed for cleaning input
 # Should match against tabs/spaces

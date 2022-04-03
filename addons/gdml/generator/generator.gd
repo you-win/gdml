@@ -9,17 +9,17 @@ enum ElementFileType {
 
 const OUTPUT_NAME := "GDML"
 
-const ScriptHandler = preload("res://addons/gdml/generator/handlers/script_handler.gd")
-const StyleHandler = preload("res://addons/gdml/generator/handlers/style_handler.gd")
+const ScriptHandler = preload("./handlers/script_handler.gd")
+const StyleHandler = preload("./handlers/style_handler.gd")
 
-const Constants = preload("res://addons/gdml/constants.gd")
-const Error = preload("res://addons/gdml/error.gd")
+const Constants = preload("../constants.gd")
+const Error = preload("../error.gd")
 
-const Layout = preload("res://addons/gdml/parser/layout.gd")
-const Tag = preload("res://addons/gdml/parser/tag.gd")
+const Layout = preload("../parser/layout.gd")
+const Tag = preload("../parser/tag.gd")
 
-const ControlRoot = preload("res://addons/gdml/generator/control_root.gd")
-const Stack = preload("res://addons/gdml/generator/stack.gd")
+const ControlRoot = preload("./control_root.gd")
+const Stack = preload("./stack.gd")
 
 var _context_path := ""
 

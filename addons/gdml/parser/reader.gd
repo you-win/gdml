@@ -1,9 +1,9 @@
 extends XMLParser
 
-const Error = preload("res://addons/gdml/error.gd")
-const Constants = preload("res://addons/gdml/constants.gd")
+const Error = preload("../error.gd")
+const Constants = preload("../constants.gd")
 
-const NodeData = preload("res://addons/gdml/parser/node_data.gd")
+const NodeData = preload("./node_data.gd")
 
 # Needed since the xml reader will sometimes run out of things to parse but still return values
 var was_complete := false

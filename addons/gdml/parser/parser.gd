@@ -1,11 +1,11 @@
 extends Reference
 
-const Error = preload("res://addons/gdml/error.gd")
+const Error = preload("../error.gd")
 
-const Layout = preload("res://addons/gdml/parser/layout.gd")
-const NodeData = preload("res://addons/gdml/parser/node_data.gd")
-const Reader = preload("res://addons/gdml/parser/reader.gd")
-const Tag = preload("res://addons/gdml/parser/tag.gd")
+const Layout = preload("./layout.gd")
+const NodeData = preload("./node_data.gd")
+const Reader = preload("./reader.gd")
+const Tag = preload("./tag.gd")
 
 var context_path := ""
 
