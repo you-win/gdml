@@ -14,6 +14,7 @@ const StyleHandler = preload("./handlers/style_handler.gd")
 
 const Constants = preload("../constants.gd")
 const Error = preload("../error.gd")
+const GDML_PATH = "../gdml.gd"
 
 const Layout = preload("../parser/layout.gd")
 const Tag = preload("../parser/tag.gd")
@@ -271,7 +272,7 @@ func _handle_attributes(tag: Tag, object: Object, stack: Stack) -> int:
 	
 	return err
 
-static func _handle_file_path(context_path: String, file_path: String) -> Object:
+func _handle_file_path(context_path: String, file_path: String) -> Object:
 	file_path = file_path if file_path.is_abs_path() else "%s/%s" % [context_path, file_path]
 
 	match file_path.get_extension():
@@ -297,7 +298,10 @@ static func _handle_file_path(context_path: String, file_path: String) -> Object
 			return script.new()
 		Constants.GDML, Constants.XML:
 			# TODO this seems like a weird corner case
-			var gdml = load("res://addons/gdml/gdml.gd").new(context_path)
+			# We cannot preload gdml since it will be a circular dependency
+			var self_path: String = get_script().get_path()
+			self_path = self_path.replace(self_path.get_file(), "")
+			var gdml = load("%s/%s" % [self_path, "../gdml.gd"]).new(context_path)
 			return gdml.generate(file_path)
 		_:
 			push_error("Unrecognized file type for file %s" % file_path)
