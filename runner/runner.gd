@@ -9,10 +9,16 @@ const GdUnzip = preload("res://addons/gdunzip/gdunzip.gd")
 
 func _ready() -> void:
 	get_tree().connect("files_dropped", self, "_on_files_dropped")
+	Redirect.connect("print_line", self, "_on_console_output")
+	printerr("hello")
 
 ###############################################################################
 # Connections                                                                 #
 ###############################################################################
+
+func _on_console_output(stdout: String, is_error: bool) -> void:
+	if is_error:
+		print("stderr: %s" % stdout)
 
 func _on_files_dropped(files: PoolStringArray, _screen: int) -> void:
 	if files.size() > 1:

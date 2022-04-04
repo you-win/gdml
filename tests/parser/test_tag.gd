@@ -1,11 +1,13 @@
-extends "res://addons/gut/test.gd"
+extends "res://tests/base_test.gd"
+
+# https://github.com/bitwes/Gut/wiki/Quick-Start
 
 ###############################################################################
 # Builtin functions                                                           #
 ###############################################################################
 
 func before_all():
-	pass
+	.before_all()
 
 func before_each():
 	pass
@@ -20,18 +22,25 @@ func after_all():
 # Utils                                                                       #
 ###############################################################################
 
-func assert_ok(value: int) -> bool:
-	assert_eq(value, OK)
-	return value == OK
-
-func assert_eq(a, b, _text = "") -> bool:
-	.assert_eq(a, b)
-	return a == b
-
-func assert_true(value: bool, _text = "") -> bool:
-	.assert_true(value)
-	return value
-
 ###############################################################################
 # Tests                                                                       #
 ###############################################################################
+
+const Tag = preload("res://addons/gdml/parser/tag.gd")
+
+func test_get_as_dict():
+	var tag := Tag.new(
+		"test_tag",
+		{
+			"some": "thing"
+		},
+		"some_text",
+		1,
+		2
+	)
+
+	assert_eq(tag.name, "test_tag")
+	assert_eq(tag.attributes["some"], "thing")
+	assert_eq(tag.text, "some_text")
+	assert_eq(tag.location, 1)
+	assert_eq(tag.depth, 2)

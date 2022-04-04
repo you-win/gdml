@@ -17,6 +17,7 @@ func get_as_dict() -> Dictionary:
 	return {
 		"node_name": node_name,
 		"is_open": is_open,
+		"is_empty": is_empty,
 		"attributes": attributes,
 		"text": text,
 		"is_complete": is_complete

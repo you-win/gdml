@@ -10,9 +10,13 @@ config_version=4
 
 [application]
 
-config/name="GodotMarkupLanguage"
-run/main_scene="res://examples/everything/everything.tscn"
+config/name="Godot Markup Language"
+run/main_scene="res://runner/runner.tscn"
 config/icon="res://icon.png"
+
+[debug]
+
+gdscript/warnings/return_value_discarded=false
 
 [editor_plugins]
 
