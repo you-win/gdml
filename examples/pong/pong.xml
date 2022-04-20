@@ -133,6 +133,12 @@
     </gdml>
 </canvas_layer>
 
+
+
+
+
+
+
 <camera_2D gdml_props="current: true"/>
 <area_2d gdml_name="LeftPaddle" gdml_props="position:x: -200; side: left" gdml_src="Paddle"/>
 <area_2d gdml_name="RightPaddle" gdml_props="position:x:  200; side: right" gdml_source="Paddle">
